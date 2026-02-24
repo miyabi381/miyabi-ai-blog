@@ -1,4 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 export type SessionPayload = {
   userId: number;
@@ -9,9 +10,9 @@ export type SessionPayload = {
 const TOKEN_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function getSecret() {
-  const secret = process.env.JWT_SECRET;
+  const secret = getRuntimeEnv("JWT_SECRET");
   if (!secret) {
-    throw new Error("JWT_SECRET is not configured.");
+    throw new Error("JWT_SECRET is not configured. Set it as a Cloudflare Pages secret.");
   }
   return new TextEncoder().encode(secret);
 }
@@ -33,4 +34,3 @@ export async function verifyToken(token: string) {
 
 export const AUTH_COOKIE_NAME = "miyabi_auth_token";
 export const AUTH_COOKIE_MAX_AGE = TOKEN_AGE_SECONDS;
-

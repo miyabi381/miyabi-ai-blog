@@ -87,9 +87,37 @@ npm run wrangler:dev
 
 `wrangler pages dev .vercel/output/static` で Pages Functions 付きで実行されます。
 
+## Cloudflare 本番公開
+
+1. Cloudflare にログイン
+
+```bash
+npx wrangler whoami
+```
+
+2. D1 の本番マイグレーションを適用
+
+```bash
+npm run db:migrate:remote
+```
+
+3. Pages Secret に `JWT_SECRET` を設定
+
+```bash
+wrangler pages secret put JWT_SECRET --project-name miyabi-ai-blog
+```
+
+4. ビルドとデプロイ
+
+```bash
+npm run pages:build
+npm run pages:deploy
+```
+
 ## Notes
 
 - `wrangler.toml` で `migrations_dir = "migrations"` を指定しています。
+- `wrangler.toml` の `database_id` は実際の D1 ID に変更してください（`000...` のままだと本番で動作しません）。
 - `postinstall` で `scripts/patch-cloudflare-tooling.js` が実行され、
   Windows 環境での `@cloudflare/next-on-pages` / `wrangler` 実行互換性を補正します。
 - `npm run build` の最後に `scripts/fix-cloudflare-root-route.js` を実行し、
