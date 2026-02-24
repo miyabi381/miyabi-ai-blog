@@ -6,5 +6,5 @@ pages_build_output_dir = ".vercel/output/static"
 [[d1_databases]]
 binding = "DB"
 database_name = "miyabi_blog"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "b3b068f8-55ef-4197-932d-9f369d91d44a"
 migrations_dir = "migrations"
