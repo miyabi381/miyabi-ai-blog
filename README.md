@@ -41,9 +41,9 @@ Next.js 14 App Router / TypeScript / TailwindCSS / Drizzle ORM / JWT 認証を�
 - `GET /api/auth/me`
 - `GET /api/posts`
 - `POST /api/posts`
-- `GET /api/posts/:id`
-- `PATCH /api/posts/:id`
-- `DELETE /api/posts/:id`
+- `GET /api/posts?postId=`
+- `PATCH /api/posts?postId=`
+- `DELETE /api/posts?postId=`
 - `GET /api/comments?postId=`
 - `POST /api/comments`
 
@@ -63,22 +63,13 @@ cp .env.example .env.local
 
 `JWT_SECRET` を強い文字列に変更してください。
 
-3. Cloudflare Pages プロジェクト設定で D1 バインディングを追加
-
-   - Binding name: `DB`
-   - Database: `miyabi_blog`
-
-4. マイグレーション適用（ローカル D1）
-
-```bash
-npm run db:migrate:local
-```
-
-5. 開発起動
+3. 開発起動
 
 ```bash
 npm run dev
 ```
+
+`lib/db.ts` がローカル実行時に `.local/dev.sqlite` を自動生成し、`migrations/*.sql` を自動適用します。
 
 ## Cloudflare Pages Build / Dev
 
@@ -98,7 +89,7 @@ npm run wrangler:dev
 
 ## Notes
 
-- `wrangler.toml` で `migrations_dir = "drizzle"` を指定しています。
+- `wrangler.toml` で `migrations_dir = "migrations"` を指定しています。
 - `postinstall` で `scripts/patch-cloudflare-tooling.js` が実行され、
   Windows 環境での `@cloudflare/next-on-pages` / `wrangler` 実行互換性を補正します。
 - `npm run build` の最後に `scripts/fix-cloudflare-root-route.js` を実行し、
@@ -116,7 +107,7 @@ npm run wrangler:dev
 ## Important Files
 
 - `db/schema.ts`
-- `drizzle/0000_init.sql`
+- `migrations/0000_init.sql`
 - `lib/db.ts`
 - `lib/jwt.ts`
 - `lib/auth-middleware.ts`

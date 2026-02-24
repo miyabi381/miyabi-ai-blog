@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "next:build": "next build",
-    "build": "npx @cloudflare/next-on-pages@1 && node ./scripts/fix-cloudflare-root-route.js",
+    "build": "npx @cloudflare/next-on-pages@1 && node ./scripts/fix-cloudflare-root-route.js && node ./scripts/fix-cloudflare-function-async-hooks.js",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "node ./scripts/patch-cloudflare-tooling.js",
@@ -18,8 +18,10 @@
   },
   "dependencies": {
     "@cloudflare/next-on-pages": "1.11.3",
+    "@types/better-sqlite3": "^7.6.13",
     "async_hooks": "^1.0.0",
     "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.6.2",
     "drizzle-orm": "^0.36.4",
     "jose": "^5.9.6",
     "next": "14.2.33",

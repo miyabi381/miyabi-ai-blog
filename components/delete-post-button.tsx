@@ -16,7 +16,7 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       return;
     }
     setLoading(true);
-    const response = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+    const response = await fetch(`/api/posts?postId=${postId}`, { method: "DELETE" });
     setLoading(false);
     if (response.ok) {
       router.push("/");
@@ -34,4 +34,3 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
     </button>
   );
 }
-

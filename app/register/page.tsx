@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export default function RegisterPage() {
   return (

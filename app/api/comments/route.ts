@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
 import { commentSchema } from "@/lib/validators";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   const postId = Number(request.nextUrl.searchParams.get("postId"));

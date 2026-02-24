@@ -2,7 +2,24 @@ import { and, desc, eq } from "drizzle-orm";
 import { comments, posts, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
 
-export async function getPostList() {
+export type PostListItem = {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  authorName: string;
+};
+
+export type PostDetail = {
+  id: number;
+  userId: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  authorName: string;
+};
+
+export async function getPostList(): Promise<PostListItem[]> {
   const db = getDb();
   return db
     .select({
@@ -17,7 +34,7 @@ export async function getPostList() {
     .orderBy(desc(posts.createdAt));
 }
 
-export async function getPostById(postId: number) {
+export async function getPostById(postId: number): Promise<PostDetail | null> {
   const db = getDb();
   const result = await db
     .select({
@@ -35,7 +52,15 @@ export async function getPostById(postId: number) {
   return result[0] ?? null;
 }
 
-export async function getCommentsByPostId(postId: number) {
+export type CommentItem = {
+  id: number;
+  content: string;
+  createdAt: string;
+  userId: number;
+  authorName: string;
+};
+
+export async function getCommentsByPostId(postId: number): Promise<CommentItem[]> {
   const db = getDb();
   return db
     .select({
@@ -51,25 +76,25 @@ export async function getCommentsByPostId(postId: number) {
     .orderBy(desc(comments.createdAt));
 }
 
-export async function getUserByEmail(email: string) {
+export async function getUserByEmail(email: string): Promise<(typeof users.$inferSelect) | null> {
   const db = getDb();
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return result[0] ?? null;
 }
 
-export async function getUserByUsername(username: string) {
+export async function getUserByUsername(username: string): Promise<(typeof users.$inferSelect) | null> {
   const db = getDb();
   const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
   return result[0] ?? null;
 }
 
-export async function getUserById(userId: number) {
+export async function getUserById(userId: number): Promise<(typeof users.$inferSelect) | null> {
   const db = getDb();
   const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return result[0] ?? null;
 }
 
-export async function getPostsByUserId(userId: number) {
+export async function getPostsByUserId(userId: number): Promise<(typeof posts.$inferSelect)[]> {
   const db = getDb();
   return db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.createdAt));
 }
@@ -83,4 +108,3 @@ export async function canEditPost(postId: number, userId: number) {
     .limit(1);
   return result.length > 0;
 }
-

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getPostsByUserId, getUserByUsername } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Params = {

@@ -6,7 +6,7 @@ import { getDb } from "@/lib/db";
 import { getUserByEmail, getUserByUsername } from "@/lib/data";
 import { registerSchema } from "@/lib/validators";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {

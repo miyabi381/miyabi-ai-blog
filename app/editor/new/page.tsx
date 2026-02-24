@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { PostForm } from "@/components/post-form";
 import { getSessionUser } from "@/lib/session";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export default async function NewPostPage() {
   const user = await getSessionUser();

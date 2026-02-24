@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function GET() {
   const user = await getSessionUser();

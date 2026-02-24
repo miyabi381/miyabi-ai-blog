@@ -22,7 +22,7 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
     setError("");
     setLoading(true);
 
-    const url = mode === "create" ? "/api/posts" : `/api/posts/${postId}`;
+    const url = mode === "create" ? "/api/posts" : `/api/posts?postId=${postId}`;
     const method = mode === "create" ? "POST" : "PATCH";
 
     const response = await fetch(url, {

@@ -4,7 +4,7 @@ import { issueAuthCookie } from "@/lib/auth";
 import { getUserByEmail } from "@/lib/data";
 import { loginSchema } from "@/lib/validators";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {

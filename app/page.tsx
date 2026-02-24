@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getPostList } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
