@@ -6,7 +6,7 @@ import { getDb } from "@/lib/db";
 import { getUserByEmail, getUserByUsername } from "@/lib/data";
 import { registerSchema } from "@/lib/validators";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function POST(request: Request) {
   try {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const db = getDb();
+    const db = await getDb();
     await db.insert(users).values({ username, email, hashedPassword });
 
     const created = await getUserByEmail(email);

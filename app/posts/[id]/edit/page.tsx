@@ -3,7 +3,7 @@ import { PostForm } from "@/components/post-form";
 import { getPostById } from "@/lib/data";
 import { getSessionUser } from "@/lib/session";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 type Params = {
   params: { id: string };

@@ -6,7 +6,7 @@ import { getDb } from "@/lib/db";
 import { getPostById, getPostList } from "@/lib/data";
 import { postSchema } from "@/lib/validators";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 function parsePostId(value: string | null) {
   if (!value) return null;
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid input." }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const inserted = await db
       .insert(posts)
       .values({
@@ -95,7 +95,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const db = getDb();
+    const db = await getDb();
     await db.update(posts).set({ title: parsed.data.title, content: parsed.data.content }).where(eq(posts.id, postId));
 
     const post = await getPostById(postId);
@@ -125,7 +125,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const db = getDb();
+    const db = await getDb();
     await db.delete(posts).where(eq(posts.id, postId));
     return NextResponse.json({ success: true });
   } catch {

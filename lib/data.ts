@@ -20,7 +20,7 @@ export type PostDetail = {
 };
 
 export async function getPostList(): Promise<PostListItem[]> {
-  const db = getDb();
+  const db = await getDb();
   return db
     .select({
       id: posts.id,
@@ -35,7 +35,7 @@ export async function getPostList(): Promise<PostListItem[]> {
 }
 
 export async function getPostById(postId: number): Promise<PostDetail | null> {
-  const db = getDb();
+  const db = await getDb();
   const result = await db
     .select({
       id: posts.id,
@@ -61,7 +61,7 @@ export type CommentItem = {
 };
 
 export async function getCommentsByPostId(postId: number): Promise<CommentItem[]> {
-  const db = getDb();
+  const db = await getDb();
   return db
     .select({
       id: comments.id,
@@ -77,30 +77,30 @@ export async function getCommentsByPostId(postId: number): Promise<CommentItem[]
 }
 
 export async function getUserByEmail(email: string): Promise<(typeof users.$inferSelect) | null> {
-  const db = getDb();
+  const db = await getDb();
   const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
   return result[0] ?? null;
 }
 
 export async function getUserByUsername(username: string): Promise<(typeof users.$inferSelect) | null> {
-  const db = getDb();
+  const db = await getDb();
   const result = await db.select().from(users).where(eq(users.username, username)).limit(1);
   return result[0] ?? null;
 }
 
 export async function getUserById(userId: number): Promise<(typeof users.$inferSelect) | null> {
-  const db = getDb();
+  const db = await getDb();
   const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return result[0] ?? null;
 }
 
 export async function getPostsByUserId(userId: number): Promise<(typeof posts.$inferSelect)[]> {
-  const db = getDb();
+  const db = await getDb();
   return db.select().from(posts).where(eq(posts.userId, userId)).orderBy(desc(posts.createdAt));
 }
 
 export async function canEditPost(postId: number, userId: number) {
-  const db = getDb();
+  const db = await getDb();
   const result = await db
     .select({ id: posts.id })
     .from(posts)

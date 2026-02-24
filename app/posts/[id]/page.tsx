@@ -6,7 +6,7 @@ import { getCommentsByPostId, getPostById } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 import { getSessionUser } from "@/lib/session";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 export const dynamic = "force-dynamic";
 
 type Params = {

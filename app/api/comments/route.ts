@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
 import { commentSchema } from "@/lib/validators";
 
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function GET(request: NextRequest) {
   const postId = Number(request.nextUrl.searchParams.get("postId"));
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid postId." }, { status: 400 });
   }
 
-  const db = getDb();
+  const db = await getDb();
   const list = await db
     .select({
       id: comments.id,
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid input." }, { status: 400 });
     }
 
-    const db = getDb();
+    const db = await getDb();
     const post = await db.select({ id: posts.id }).from(posts).where(eq(posts.id, parsed.data.postId)).limit(1);
     if (post.length === 0) {
       return NextResponse.json({ error: "Post not found." }, { status: 404 });
