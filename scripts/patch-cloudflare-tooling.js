@@ -75,6 +75,11 @@ async function ensureBlakeWasm() {
 }
 
 async function main() {
+  if (process.platform !== "win32") {
+    console.log("[patch-cloudflare-tooling] Non-Windows environment detected, skipped.");
+    return;
+  }
+
   patchNextOnPages();
   await ensureBlakeWasm();
 }
