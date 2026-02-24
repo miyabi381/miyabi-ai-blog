@@ -75,13 +75,12 @@ async function ensureBlakeWasm() {
 }
 
 async function main() {
-  if (process.platform !== "win32") {
-    console.log("[patch-cloudflare-tooling] Non-Windows environment detected, skipped.");
-    return;
-  }
-
   patchNextOnPages();
-  await ensureBlakeWasm();
+  if (process.platform === "win32") {
+    await ensureBlakeWasm();
+  } else {
+    console.log("[patch-cloudflare-tooling] Non-Windows environment: skipped blake3 wasm fallback.");
+  }
 }
 
 main().catch((error) => {
