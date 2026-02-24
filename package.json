@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "next:build": "next build",
-    "build": "npx @cloudflare/next-on-pages@1",
+    "build": "npx @cloudflare/next-on-pages@1 && node ./scripts/fix-cloudflare-root-route.js",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "node ./scripts/patch-cloudflare-tooling.js",

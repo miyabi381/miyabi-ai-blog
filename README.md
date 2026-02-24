@@ -101,6 +101,8 @@ npm run wrangler:dev
 - `wrangler.toml` で `migrations_dir = "drizzle"` を指定しています。
 - `postinstall` で `scripts/patch-cloudflare-tooling.js` が実行され、
   Windows 環境での `@cloudflare/next-on-pages` / `wrangler` 実行互換性を補正します。
+- `npm run build` の最後に `scripts/fix-cloudflare-root-route.js` を実行し、
+  まれに `/` が `Not Found` になる `next-on-pages` のルート生成不整合を補正します。
 
 ## D1 Schema
 
