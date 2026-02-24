@@ -2,9 +2,4 @@ name = "miyabi-ai-blog"
 compatibility_date = "2026-02-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "miyabi_blog"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
-migrations_dir = "drizzle"
+# D1 binding is managed in Cloudflare Pages dashboard/project settings.

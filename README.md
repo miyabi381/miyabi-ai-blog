@@ -63,7 +63,10 @@ cp .env.example .env.local
 
 `JWT_SECRET` を強い文字列に変更してください。
 
-3. `wrangler.toml` の `database_id` を実際の D1 ID に変更
+3. Cloudflare Pages プロジェクト設定で D1 バインディングを追加
+
+   - Binding name: `DB`
+   - Database: `miyabi_blog`
 
 4. マイグレーション適用（ローカル D1）
 
