@@ -21,39 +21,86 @@ export type PostDetail = {
   authorAvatarUrl: string | null;
 };
 
+function isMissingColumnError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return message.includes("no such column") || message.includes("has no column named");
+}
+
 export async function getPostList(): Promise<PostListItem[]> {
   const db = await getDb();
-  return db
-    .select({
-      id: posts.id,
-      title: posts.title,
-      content: posts.content,
-      createdAt: posts.createdAt,
-      authorName: users.username,
-      authorAvatarUrl: users.avatarUrl
-    })
-    .from(posts)
-    .innerJoin(users, eq(posts.userId, users.id))
-    .orderBy(desc(posts.createdAt));
+  try {
+    return await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        authorName: users.username,
+        authorAvatarUrl: users.avatarUrl
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .orderBy(desc(posts.createdAt));
+  } catch (error) {
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+    const legacy = await db
+      .select({
+        id: posts.id,
+        title: posts.title,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        authorName: users.username
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .orderBy(desc(posts.createdAt));
+    return legacy.map((post: Omit<PostListItem, "authorAvatarUrl">) => ({ ...post, authorAvatarUrl: null }));
+  }
 }
 
 export async function getPostById(postId: number): Promise<PostDetail | null> {
   const db = await getDb();
-  const result = await db
-    .select({
-      id: posts.id,
-      userId: posts.userId,
-      title: posts.title,
-      content: posts.content,
-      createdAt: posts.createdAt,
-      authorName: users.username,
-      authorAvatarUrl: users.avatarUrl
-    })
-    .from(posts)
-    .innerJoin(users, eq(posts.userId, users.id))
-    .where(eq(posts.id, postId))
-    .limit(1);
-  return result[0] ?? null;
+  try {
+    const result = await db
+      .select({
+        id: posts.id,
+        userId: posts.userId,
+        title: posts.title,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        authorName: users.username,
+        authorAvatarUrl: users.avatarUrl
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+    return result[0] ?? null;
+  } catch (error) {
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+    const legacy = await db
+      .select({
+        id: posts.id,
+        userId: posts.userId,
+        title: posts.title,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        authorName: users.username
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+    const post = legacy[0];
+    return post ? { ...post, authorAvatarUrl: null } : null;
+  }
 }
 
 export type CommentItem = {
@@ -69,21 +116,45 @@ export type CommentItem = {
 
 export async function getCommentsByPostId(postId: number): Promise<CommentItem[]> {
   const db = await getDb();
-  return db
-    .select({
-      id: comments.id,
-      postId: comments.postId,
-      content: comments.content,
-      createdAt: comments.createdAt,
-      userId: comments.userId,
-      authorName: users.username,
-      authorAvatarUrl: users.avatarUrl,
-      parentCommentId: comments.parentCommentId
-    })
-    .from(comments)
-    .innerJoin(users, eq(comments.userId, users.id))
-    .where(eq(comments.postId, postId))
-    .orderBy(asc(comments.createdAt));
+  try {
+    return await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        userId: comments.userId,
+        authorName: users.username,
+        authorAvatarUrl: users.avatarUrl,
+        parentCommentId: comments.parentCommentId
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(asc(comments.createdAt));
+  } catch (error) {
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+    const legacy = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        userId: comments.userId,
+        authorName: users.username
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(asc(comments.createdAt));
+    return legacy.map((comment: Omit<CommentItem, "authorAvatarUrl" | "parentCommentId">) => ({
+      ...comment,
+      authorAvatarUrl: null,
+      parentCommentId: null
+    }));
+  }
 }
 
 export async function getUserByEmail(email: string): Promise<(typeof users.$inferSelect) | null> {

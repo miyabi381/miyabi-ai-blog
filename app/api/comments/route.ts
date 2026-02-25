@@ -7,6 +7,14 @@ import { commentSchema } from "@/lib/validators";
 
 export const runtime = "edge";
 
+function isMissingColumnError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const message = error.message.toLowerCase();
+  return message.includes("no such column") || message.includes("has no column named");
+}
+
 export async function GET(request: NextRequest) {
   const postId = Number(request.nextUrl.searchParams.get("postId"));
   if (!Number.isInteger(postId) || postId <= 0) {
@@ -14,21 +22,55 @@ export async function GET(request: NextRequest) {
   }
 
   const db = await getDb();
-  const list = await db
-    .select({
-      id: comments.id,
-      postId: comments.postId,
-      userId: comments.userId,
-      parentCommentId: comments.parentCommentId,
-      content: comments.content,
-      createdAt: comments.createdAt,
-      authorName: users.username,
-      authorAvatarUrl: users.avatarUrl
-    })
-    .from(comments)
-    .innerJoin(users, eq(comments.userId, users.id))
-    .where(eq(comments.postId, postId))
-    .orderBy(asc(comments.createdAt));
+  let list: Array<{
+    id: number;
+    postId: number;
+    userId: number;
+    parentCommentId: number | null;
+    content: string;
+    createdAt: string;
+    authorName: string;
+    authorAvatarUrl: string | null;
+  }> = [];
+  try {
+    list = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        userId: comments.userId,
+        parentCommentId: comments.parentCommentId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorName: users.username,
+        authorAvatarUrl: users.avatarUrl
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(asc(comments.createdAt));
+  } catch (error) {
+    if (!isMissingColumnError(error)) {
+      throw error;
+    }
+    const legacy = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        userId: comments.userId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorName: users.username
+      })
+      .from(comments)
+      .innerJoin(users, eq(comments.userId, users.id))
+      .where(eq(comments.postId, postId))
+      .orderBy(asc(comments.createdAt));
+    list = legacy.map((comment: Omit<(typeof list)[number], "parentCommentId" | "authorAvatarUrl">) => ({
+      ...comment,
+      parentCommentId: null,
+      authorAvatarUrl: null
+    }));
+  }
 
   return NextResponse.json({ comments: list });
 }
@@ -70,22 +112,60 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const inserted = await db
-      .insert(comments)
-      .values({
-        postId: parsed.data.postId,
-        userId: auth.session.userId,
-        parentCommentId: parsed.data.parentCommentId ?? null,
-        content: parsed.data.content
-      })
-      .returning({
-        id: comments.id,
-        postId: comments.postId,
-        userId: comments.userId,
-        parentCommentId: comments.parentCommentId,
-        content: comments.content,
-        createdAt: comments.createdAt
-      });
+    let inserted: Array<{
+      id: number;
+      postId: number;
+      userId: number;
+      parentCommentId: number | null;
+      content: string;
+      createdAt: string;
+    }>;
+    try {
+      inserted = await db
+        .insert(comments)
+        .values({
+          postId: parsed.data.postId,
+          userId: auth.session.userId,
+          parentCommentId: parsed.data.parentCommentId ?? null,
+          content: parsed.data.content
+        })
+        .returning({
+          id: comments.id,
+          postId: comments.postId,
+          userId: comments.userId,
+          parentCommentId: comments.parentCommentId,
+          content: comments.content,
+          createdAt: comments.createdAt
+        });
+    } catch (error) {
+      if (!isMissingColumnError(error)) {
+        throw error;
+      }
+      if (parsed.data.parentCommentId) {
+        return NextResponse.json(
+          { error: "返信機能を有効化するには最新のデータベースマイグレーションを適用してください。" },
+          { status: 503 }
+        );
+      }
+      const legacyInserted = await db
+        .insert(comments)
+        .values({
+          postId: parsed.data.postId,
+          userId: auth.session.userId,
+          content: parsed.data.content
+        })
+        .returning({
+          id: comments.id,
+          postId: comments.postId,
+          userId: comments.userId,
+          content: comments.content,
+          createdAt: comments.createdAt
+        });
+      inserted = legacyInserted.map((comment: Omit<(typeof inserted)[number], "parentCommentId">) => ({
+        ...comment,
+        parentCommentId: null
+      }));
+    }
 
     return NextResponse.json({ comment: inserted[0] }, { status: 201 });
   } catch {
