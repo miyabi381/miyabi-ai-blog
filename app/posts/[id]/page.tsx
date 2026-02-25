@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Avatar } from "@/components/avatar";
 import { CommentForm } from "@/components/comment-form";
+import { CommentThread } from "@/components/comment-thread";
 import { DeletePostButton } from "@/components/delete-post-button";
+import { MarkdownContent } from "@/components/markdown-content";
 import { getCommentsByPostId, getPostById } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 import { getSessionUser } from "@/lib/session";
@@ -35,13 +38,14 @@ export default async function PostDetailPage({ params }: Params) {
     <section className="space-y-6">
       <article className="card p-6">
         <div className="mb-2 flex items-center gap-3 text-xs text-slate-500">
+          <Avatar username={post.authorName} avatarUrl={post.authorAvatarUrl} size={32} />
           <Link href={`/profile/${post.authorName}`} className="font-medium hover:text-accent">
             @{post.authorName}
           </Link>
           <span>{toJaDateTime(post.createdAt)}</span>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
-        <p className="mt-5 whitespace-pre-wrap leading-7 text-slate-800">{post.content}</p>
+        <MarkdownContent markdown={post.content} className="mt-5 leading-7 text-slate-800" />
       </article>
 
       {canEdit ? (
@@ -55,21 +59,7 @@ export default async function PostDetailPage({ params }: Params) {
 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">コメント</h2>
-        {comments.length === 0 ? (
-          <p className="card p-4 text-sm text-slate-600">まだコメントはありません。</p>
-        ) : (
-          comments.map((comment) => (
-            <article key={comment.id} className="card p-4">
-              <div className="mb-1 flex items-center gap-3 text-xs text-slate-500">
-                <Link href={`/profile/${comment.authorName}`} className="font-medium hover:text-accent">
-                  @{comment.authorName}
-                </Link>
-                <span>{toJaDateTime(comment.createdAt)}</span>
-              </div>
-              <p className="whitespace-pre-wrap text-sm text-slate-800">{comment.content}</p>
-            </article>
-          ))
-        )}
+        <CommentThread postId={post.id} comments={comments} canReply={Boolean(session)} />
       </section>
 
       {session ? (

@@ -7,6 +7,7 @@ export const users = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     username: text("username").notNull(),
     email: text("email").notNull(),
+    avatarUrl: text("avatar_url"),
     hashedPassword: text("hashed_password").notNull(),
     createdAt: text("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
@@ -38,9 +39,9 @@ export const comments = sqliteTable("comments", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  parentCommentId: integer("parent_comment_id"),
   content: text("content").notNull(),
   createdAt: text("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull()
 });
-

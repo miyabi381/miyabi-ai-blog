@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Avatar } from "@/components/avatar";
+import { MarkdownContent } from "@/components/markdown-content";
 import { getPostList } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 
@@ -21,6 +23,7 @@ export default async function HomePage() {
           posts.map((post) => (
             <article key={post.id} className="card p-6">
               <div className="mb-2 flex items-center gap-3 text-xs text-slate-500">
+                <Avatar username={post.authorName} avatarUrl={post.authorAvatarUrl} size={24} />
                 <span>@{post.authorName}</span>
                 <span>{toJaDateTime(post.createdAt)}</span>
               </div>
@@ -29,9 +32,7 @@ export default async function HomePage() {
                   {post.title}
                 </Link>
               </h2>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
-                {post.content}
-              </p>
+              <MarkdownContent markdown={post.content} className="mt-2 text-sm text-slate-700" />
             </article>
           ))
         )}

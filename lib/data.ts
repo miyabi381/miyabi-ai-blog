@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { comments, posts, users } from "@/db/schema";
 import { getDb } from "@/lib/db";
 
@@ -8,6 +8,7 @@ export type PostListItem = {
   content: string;
   createdAt: string;
   authorName: string;
+  authorAvatarUrl: string | null;
 };
 
 export type PostDetail = {
@@ -17,6 +18,7 @@ export type PostDetail = {
   content: string;
   createdAt: string;
   authorName: string;
+  authorAvatarUrl: string | null;
 };
 
 export async function getPostList(): Promise<PostListItem[]> {
@@ -27,7 +29,8 @@ export async function getPostList(): Promise<PostListItem[]> {
       title: posts.title,
       content: posts.content,
       createdAt: posts.createdAt,
-      authorName: users.username
+      authorName: users.username,
+      authorAvatarUrl: users.avatarUrl
     })
     .from(posts)
     .innerJoin(users, eq(posts.userId, users.id))
@@ -43,7 +46,8 @@ export async function getPostById(postId: number): Promise<PostDetail | null> {
       title: posts.title,
       content: posts.content,
       createdAt: posts.createdAt,
-      authorName: users.username
+      authorName: users.username,
+      authorAvatarUrl: users.avatarUrl
     })
     .from(posts)
     .innerJoin(users, eq(posts.userId, users.id))
@@ -54,10 +58,13 @@ export async function getPostById(postId: number): Promise<PostDetail | null> {
 
 export type CommentItem = {
   id: number;
+  postId: number;
   content: string;
   createdAt: string;
   userId: number;
   authorName: string;
+  authorAvatarUrl: string | null;
+  parentCommentId: number | null;
 };
 
 export async function getCommentsByPostId(postId: number): Promise<CommentItem[]> {
@@ -65,15 +72,18 @@ export async function getCommentsByPostId(postId: number): Promise<CommentItem[]
   return db
     .select({
       id: comments.id,
+      postId: comments.postId,
       content: comments.content,
       createdAt: comments.createdAt,
       userId: comments.userId,
-      authorName: users.username
+      authorName: users.username,
+      authorAvatarUrl: users.avatarUrl,
+      parentCommentId: comments.parentCommentId
     })
     .from(comments)
     .innerJoin(users, eq(comments.userId, users.id))
     .where(eq(comments.postId, postId))
-    .orderBy(desc(comments.createdAt));
+    .orderBy(asc(comments.createdAt));
 }
 
 export async function getUserByEmail(email: string): Promise<(typeof users.$inferSelect) | null> {

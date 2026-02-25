@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 
 type CommentFormProps = {
   postId: number;
+  parentCommentId?: number | null;
+  compact?: boolean;
+  onSubmitted?: () => void;
 };
 
-export function CommentForm({ postId }: CommentFormProps) {
+export function CommentForm({ postId, parentCommentId = null, compact = false, onSubmitted }: CommentFormProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -20,7 +23,7 @@ export function CommentForm({ postId }: CommentFormProps) {
     const response = await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId, content })
+      body: JSON.stringify({ postId, parentCommentId, content })
     });
     const data = (await response.json()) as { error?: string };
     setLoading(false);
@@ -29,14 +32,15 @@ export function CommentForm({ postId }: CommentFormProps) {
       return;
     }
     setContent("");
+    onSubmitted?.();
     router.refresh();
   }
 
   return (
-    <form onSubmit={onSubmit} className="card mt-6 space-y-3 p-4">
-      <label className="text-sm font-medium">コメントを追加</label>
+    <form onSubmit={onSubmit} className={`card space-y-3 p-4 ${compact ? "mt-3" : "mt-6"}`}>
+      <label className="text-sm font-medium">{parentCommentId ? "返信を追加" : "コメントを追加"}</label>
       <textarea
-        rows={4}
+        rows={compact ? 3 : 4}
         className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
         value={content}
         onChange={(e) => setContent(e.target.value)}

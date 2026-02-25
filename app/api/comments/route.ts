@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
 import { comments, posts, users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
@@ -19,14 +19,16 @@ export async function GET(request: NextRequest) {
       id: comments.id,
       postId: comments.postId,
       userId: comments.userId,
+      parentCommentId: comments.parentCommentId,
       content: comments.content,
       createdAt: comments.createdAt,
-      authorName: users.username
+      authorName: users.username,
+      authorAvatarUrl: users.avatarUrl
     })
     .from(comments)
     .innerJoin(users, eq(comments.userId, users.id))
     .where(eq(comments.postId, postId))
-    .orderBy(desc(comments.createdAt));
+    .orderBy(asc(comments.createdAt));
 
   return NextResponse.json({ comments: list });
 }
@@ -38,9 +40,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = (await request.json()) as { postId?: unknown; content?: unknown };
+    const body = (await request.json()) as { postId?: unknown; parentCommentId?: unknown; content?: unknown };
     const parsed = commentSchema.safeParse({
       postId: Number(body?.postId),
+      parentCommentId:
+        body?.parentCommentId === null || body?.parentCommentId === undefined
+          ? null
+          : Number(body.parentCommentId),
       content: typeof body?.content === "string" ? body.content : body?.content
     });
     if (!parsed.success) {
@@ -53,17 +59,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "投稿が見つかりません。" }, { status: 404 });
     }
 
+    if (parsed.data.parentCommentId) {
+      const parent = await db
+        .select({ id: comments.id, postId: comments.postId })
+        .from(comments)
+        .where(eq(comments.id, parsed.data.parentCommentId))
+        .limit(1);
+      if (!parent[0] || parent[0].postId !== parsed.data.postId) {
+        return NextResponse.json({ error: "返信先コメントが見つかりません。" }, { status: 404 });
+      }
+    }
+
     const inserted = await db
       .insert(comments)
       .values({
         postId: parsed.data.postId,
         userId: auth.session.userId,
+        parentCommentId: parsed.data.parentCommentId ?? null,
         content: parsed.data.content
       })
       .returning({
         id: comments.id,
         postId: comments.postId,
         userId: comments.userId,
+        parentCommentId: comments.parentCommentId,
         content: comments.content,
         createdAt: comments.createdAt
       });

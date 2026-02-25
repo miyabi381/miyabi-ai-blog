@@ -18,6 +18,14 @@ export const postSchema = z.object({
 
 export const commentSchema = z.object({
   postId: z.number().int().positive(),
+  parentCommentId: z.number().int().positive().nullable().optional(),
   content: z.string().min(1).max(2000)
 });
 
+export const avatarSchema = z.object({
+  avatarUrl: z
+    .string()
+    .trim()
+    .max(1024)
+    .refine((value) => value === "" || /^https?:\/\//.test(value), "画像URLはhttp://またはhttps://で始めてください。")
+});

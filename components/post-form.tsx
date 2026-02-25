@@ -1,7 +1,8 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { MarkdownContent } from "@/components/markdown-content";
 
 type PostFormProps = {
   mode: "create" | "edit";
@@ -12,10 +13,51 @@ type PostFormProps = {
 
 export function PostForm({ mode, postId, initialTitle = "", initialContent = "" }: PostFormProps) {
   const router = useRouter();
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(false);
+
+  function wrapSelection(before: string, after = "") {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = content.slice(start, end);
+    const inserted = `${before}${selected}${after}`;
+    const next = `${content.slice(0, start)}${inserted}${content.slice(end)}`;
+    setContent(next);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const caret = start + inserted.length;
+      textarea.setSelectionRange(caret, caret);
+    });
+  }
+
+  function insertPrefixForLines(prefix: string) {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = content.slice(start, end);
+    const replaced = selected
+      .split("\n")
+      .map((line) => `${prefix}${line}`)
+      .join("\n");
+    const next = `${content.slice(0, start)}${replaced}${content.slice(end)}`;
+    setContent(next);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start, start + replaced.length);
+    });
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,7 +106,49 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
       </div>
       <div className="space-y-1">
         <label className="text-sm font-medium">本文</label>
+        <div className="flex flex-wrap gap-2 pb-2">
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("## ")}>
+            見出し
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("**", "**")}>
+            太字
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("*", "*")}>
+            斜体
+          </button>
+          <button
+            type="button"
+            className="rounded border px-2 py-1 text-xs"
+            onClick={() => wrapSelection("[リンクテキスト](", "https://example.com)")}
+          >
+            リンク
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("`", "`")}>
+            インラインコード
+          </button>
+          <button
+            type="button"
+            className="rounded border px-2 py-1 text-xs"
+            onClick={() => wrapSelection("\n```\n", "\n```\n")}
+          >
+            コードブロック
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => insertPrefixForLines("- ")}>
+            箇条書き
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => insertPrefixForLines("> ")}>
+            引用
+          </button>
+          <button
+            type="button"
+            className="rounded border px-2 py-1 text-xs"
+            onClick={() => setPreview((current) => !current)}
+          >
+            {preview ? "プレビューを閉じる" : "プレビュー"}
+          </button>
+        </div>
         <textarea
+          ref={textareaRef}
           rows={14}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
           value={content}
@@ -72,6 +156,11 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
           required
           minLength={10}
         />
+        {preview ? (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <MarkdownContent markdown={content} />
+          </div>
+        ) : null}
       </div>
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <button

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Avatar } from "@/components/avatar";
+import { ProfileAvatarForm } from "@/components/profile-avatar-form";
 import { getPostsByUserId, getUserByUsername } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
+import { getSessionUser } from "@/lib/session";
 
 export const runtime = "edge";
 export const dynamic = "force-dynamic";
@@ -11,19 +14,26 @@ type Params = {
 };
 
 export default async function ProfilePage({ params }: Params) {
-  const user = await getUserByUsername(params.username);
+  const [user, session] = await Promise.all([getUserByUsername(params.username), getSessionUser()]);
   if (!user) {
     notFound();
   }
 
   const posts = await getPostsByUserId(user.id);
+  const canEditProfile = session?.userId === user.id;
 
   return (
     <section className="space-y-5">
       <article className="card p-6">
-        <h1 className="text-2xl font-bold">@{user.username}</h1>
-        <p className="mt-1 text-sm text-slate-600">{user.email}</p>
-        <p className="mt-1 text-xs text-slate-500">登録日: {toJaDateTime(user.createdAt)}</p>
+        <div className="flex items-center gap-4">
+          <Avatar username={user.username} avatarUrl={user.avatarUrl} size={64} className="border border-slate-300" />
+          <div>
+            <h1 className="text-2xl font-bold">@{user.username}</h1>
+            <p className="mt-1 text-sm text-slate-600">{user.email}</p>
+            <p className="mt-1 text-xs text-slate-500">登録日: {toJaDateTime(user.createdAt)}</p>
+          </div>
+        </div>
+        {canEditProfile ? <ProfileAvatarForm initialAvatarUrl={user.avatarUrl} /> : null}
       </article>
 
       <div className="space-y-3">
