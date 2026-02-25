@@ -38,10 +38,11 @@ export default async function PostDetailPage({ params }: Params) {
     <section className="space-y-6">
       <article className="card p-6">
         <div className="mb-2 flex items-center gap-3 text-xs text-slate-500">
-          <Avatar username={post.authorName} avatarUrl={post.authorAvatarUrl} size={32} />
-          <Link href={`/profile/${post.authorName}`} className="font-medium hover:text-accent">
-            @{post.authorName}
+          <Avatar username={post.authorUsername} avatarUrl={post.authorAvatarUrl} size={32} />
+          <Link href={`/profile/${post.authorUsername}`} className="font-medium hover:text-accent">
+            {post.authorName}
           </Link>
+          <span className="text-slate-400">@{post.authorUsername}</span>
           <span>{toJaDateTime(post.createdAt)}</span>
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>

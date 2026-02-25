@@ -18,7 +18,6 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
   const [content, setContent] = useState(initialContent);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState(false);
 
   function wrapSelection(before: string, after = "") {
     const textarea = textareaRef.current;
@@ -56,6 +55,23 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
     requestAnimationFrame(() => {
       textarea.focus();
       textarea.setSelectionRange(start, start + replaced.length);
+    });
+  }
+
+  function insertAtCursor(text: string) {
+    const textarea = textareaRef.current;
+    if (!textarea) {
+      setContent((prev) => `${prev}${text}`);
+      return;
+    }
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const next = `${content.slice(0, start)}${text}${content.slice(end)}`;
+    setContent(next);
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const caret = start + text.length;
+      textarea.setSelectionRange(caret, caret);
     });
   }
 
@@ -107,60 +123,64 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
       <div className="space-y-1">
         <label className="text-sm font-medium">本文</label>
         <div className="flex flex-wrap gap-2 pb-2">
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("## ")}>
-            見出し
+          <button type="button" className="rounded border px-2 py-1 text-xs font-bold" title="太字" onClick={() => wrapSelection("**", "**")}>
+            B
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("**", "**")}>
-            太字
+          <button type="button" className="rounded border px-2 py-1 text-xs italic" title="斜体" onClick={() => wrapSelection("*", "*")}>
+            I
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("*", "*")}>
-            斜体
+          <button type="button" className="rounded border px-2 py-1 text-xs underline" title="下線" onClick={() => wrapSelection("__", "__")}>
+            U
           </button>
-          <button
-            type="button"
-            className="rounded border px-2 py-1 text-xs"
-            onClick={() => wrapSelection("[リンクテキスト](", "https://example.com)")}
-          >
-            リンク
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="見出し" onClick={() => wrapSelection("## ")}>
+            H2
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => wrapSelection("`", "`")}>
-            インラインコード
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="文字色" onClick={() => wrapSelection("[color:red]", "[/color]")}>
+            <span style={{ color: "#dc2626" }}>A</span>
           </button>
-          <button
-            type="button"
-            className="rounded border px-2 py-1 text-xs"
-            onClick={() => wrapSelection("\n```\n", "\n```\n")}
-          >
-            コードブロック
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="リンク" onClick={() => wrapSelection("[リンクテキスト](", "https://example.com)")}>
+            🔗
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => insertPrefixForLines("- ")}>
-            箇条書き
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="画像URL" onClick={() => wrapSelection("![画像説明](", "https://example.com/image.png)")}>
+            🖼️
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" onClick={() => insertPrefixForLines("> ")}>
-            引用
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="水平線" onClick={() => insertAtCursor("\n---\n")}>
+            ―
           </button>
-          <button
-            type="button"
-            className="rounded border px-2 py-1 text-xs"
-            onClick={() => setPreview((current) => !current)}
-          >
-            {preview ? "プレビューを閉じる" : "プレビュー"}
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="インラインコード" onClick={() => wrapSelection("`", "`")}>
+            {"</>"}
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="JavaScriptコードブロック" onClick={() => insertAtCursor("\n```js\n\n```\n")}>
+            JS
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="HTMLコードブロック" onClick={() => insertAtCursor("\n```html\n\n```\n")}>
+            HTML
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="CSSコードブロック" onClick={() => insertAtCursor("\n```css\n\n```\n")}>
+            CSS
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="箇条書き" onClick={() => insertPrefixForLines("- ")}>
+            •
+          </button>
+          <button type="button" className="rounded border px-2 py-1 text-xs" title="引用" onClick={() => insertPrefixForLines("> ")}>
+            “
           </button>
         </div>
-        <textarea
-          ref={textareaRef}
-          rows={14}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          minLength={10}
-        />
-        {preview ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          <textarea
+            ref={textareaRef}
+            rows={14}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            minLength={10}
+          />
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500">リアルタイムプレビュー</p>
             <MarkdownContent markdown={content} />
           </div>
-        ) : null}
+        </div>
       </div>
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
       <button

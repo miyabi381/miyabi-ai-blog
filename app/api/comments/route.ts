@@ -30,10 +30,11 @@ export async function GET(request: NextRequest) {
     content: string;
     createdAt: string;
     authorName: string;
+    authorUsername: string;
     authorAvatarUrl: string | null;
   }> = [];
   try {
-    list = await db
+    const rows = await db
       .select({
         id: comments.id,
         postId: comments.postId,
@@ -41,13 +42,18 @@ export async function GET(request: NextRequest) {
         parentCommentId: comments.parentCommentId,
         content: comments.content,
         createdAt: comments.createdAt,
-        authorName: users.username,
+        authorName: users.displayName,
+        authorUsername: users.username,
         authorAvatarUrl: users.avatarUrl
       })
       .from(comments)
       .innerJoin(users, eq(comments.userId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(asc(comments.createdAt));
+    list = rows.map((row: (typeof rows)[number]) => ({
+      ...row,
+      authorName: row.authorName ?? row.authorUsername
+    }));
   } catch (error) {
     if (!isMissingColumnError(error)) {
       throw error;
@@ -59,14 +65,15 @@ export async function GET(request: NextRequest) {
         userId: comments.userId,
         content: comments.content,
         createdAt: comments.createdAt,
-        authorName: users.username
+        authorUsername: users.username
       })
       .from(comments)
       .innerJoin(users, eq(comments.userId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(asc(comments.createdAt));
-    list = legacy.map((comment: Omit<(typeof list)[number], "parentCommentId" | "authorAvatarUrl">) => ({
+    list = legacy.map((comment: (typeof legacy)[number]) => ({
       ...comment,
+      authorName: comment.authorUsername,
       parentCommentId: null,
       authorAvatarUrl: null
     }));

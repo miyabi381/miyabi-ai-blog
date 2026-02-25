@@ -14,6 +14,7 @@ export type CommentNode = {
   content: string;
   createdAt: string;
   authorName: string;
+  authorUsername: string;
   authorAvatarUrl: string | null;
 };
 
@@ -69,10 +70,11 @@ function CommentItem({ postId, node, depth, canReply, replyingToId, onToggleRepl
   return (
     <article className="card p-4" style={{ marginLeft: `${Math.min(depth, 5) * 16}px` }}>
       <div className="mb-2 flex items-center gap-3 text-xs text-slate-500">
-        <Avatar username={node.authorName} avatarUrl={node.authorAvatarUrl} size={28} />
-        <Link href={`/profile/${node.authorName}`} className="font-medium hover:text-accent">
-          @{node.authorName}
+        <Avatar username={node.authorUsername} avatarUrl={node.authorAvatarUrl} size={28} />
+        <Link href={`/profile/${node.authorUsername}`} className="font-medium hover:text-accent">
+          {node.authorName}
         </Link>
+        <span className="text-slate-400">@{node.authorUsername}</span>
         <span>{toJaDateTime(node.createdAt)}</span>
       </div>
 

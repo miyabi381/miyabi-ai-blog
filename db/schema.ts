@@ -6,6 +6,7 @@ export const users = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     username: text("username").notNull(),
+    displayName: text("display_name"),
     email: text("email").notNull(),
     avatarUrl: text("avatar_url"),
     hashedPassword: text("hashed_password").notNull(),

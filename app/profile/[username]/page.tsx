@@ -28,12 +28,15 @@ export default async function ProfilePage({ params }: Params) {
         <div className="flex items-center gap-4">
           <Avatar username={user.username} avatarUrl={user.avatarUrl} size={64} className="border border-slate-300" />
           <div>
-            <h1 className="text-2xl font-bold">@{user.username}</h1>
+            <h1 className="text-2xl font-bold">{user.displayName ?? user.username}</h1>
+            <p className="mt-1 text-sm text-slate-600">@{user.username}</p>
             <p className="mt-1 text-sm text-slate-600">{user.email}</p>
             <p className="mt-1 text-xs text-slate-500">登録日: {toJaDateTime(user.createdAt)}</p>
           </div>
         </div>
-        {canEditProfile ? <ProfileAvatarForm initialAvatarUrl={user.avatarUrl} /> : null}
+        {canEditProfile ? (
+          <ProfileAvatarForm initialDisplayName={user.displayName ?? user.username} initialAvatarUrl={user.avatarUrl} />
+        ) : null}
       </article>
 
       <div className="space-y-3">
@@ -46,6 +49,7 @@ export default async function ProfilePage({ params }: Params) {
               <Link href={`/posts/${post.id}`} className="font-semibold hover:text-accent">
                 {post.title}
               </Link>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700 clamp-4-lines">{post.content}</p>
               <p className="mt-1 text-xs text-slate-500">{toJaDateTime(post.createdAt)}</p>
             </article>
           ))

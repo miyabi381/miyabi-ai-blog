@@ -7,6 +7,35 @@ function escapeHtml(value: string) {
     .replaceAll("'", "&#39;");
 }
 
+function escapeAttribute(value: string) {
+  return escapeHtml(value).replaceAll("`", "&#96;");
+}
+
+function applyColorTag(text: string) {
+  const colorWhitelist = new Set([
+    "red",
+    "blue",
+    "green",
+    "orange",
+    "purple",
+    "pink",
+    "teal",
+    "gray",
+    "#ff0000",
+    "#0000ff",
+    "#008000",
+    "#ff7f00"
+  ]);
+
+  return text.replace(/\[color:([#a-zA-Z0-9]+)\]([\s\S]*?)\[\/color\]/g, (_m, rawColor: string, inner: string) => {
+    const color = rawColor.toLowerCase();
+    if (!colorWhitelist.has(color)) {
+      return inner;
+    }
+    return `<span style="color:${escapeAttribute(color)}">${inner}</span>`;
+  });
+}
+
 function formatInline(text: string) {
   const escaped = escapeHtml(text);
   const codeTokens: string[] = [];
@@ -21,10 +50,54 @@ function formatInline(text: string) {
   });
 
   const withStrong = withLinks.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  const withEmphasis = withStrong.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  const withUnderline = withStrong.replace(/__([^_]+)__/g, "<u>$1</u>");
+  const withEmphasis = withUnderline.replace(/\*([^*]+)\*/g, "<em>$1</em>");
   const withStrike = withEmphasis.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+  const withColors = applyColorTag(withStrike);
 
-  return withStrike.replace(/__CODE_(\d+)__/g, (_match, index: string) => codeTokens[Number(index)] ?? "");
+  return withColors.replace(/__CODE_(\d+)__/g, (_match, index: string) => codeTokens[Number(index)] ?? "");
+}
+
+function highlightJs(code: string) {
+  let text = escapeHtml(code);
+  text = text.replace(
+    /\b(const|let|var|function|return|if|else|for|while|switch|case|break|continue|new|class|import|from|export|async|await|try|catch|finally|throw)\b/g,
+    '<span class="token-keyword">$1</span>'
+  );
+  text = text.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
+  text = text.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="token-number">$1</span>');
+  text = text.replace(/(\/\/.*)$/gm, '<span class="token-comment">$1</span>');
+  return text;
+}
+
+function highlightCss(code: string) {
+  let text = escapeHtml(code);
+  text = text.replace(/([.#]?[a-zA-Z][\w-]*)\s*(\{)/g, '<span class="token-selector">$1</span> $2');
+  text = text.replace(/([a-z-]+)(\s*:)/g, '<span class="token-property">$1</span>$2');
+  text = text.replace(/(:\s*)(#[0-9a-fA-F]{3,8}|[a-zA-Z-]+|\d+px|\d+rem|\d+%)/g, '$1<span class="token-value">$2</span>');
+  text = text.replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="token-comment">$1</span>');
+  return text;
+}
+
+function highlightHtml(code: string) {
+  let text = escapeHtml(code);
+  text = text.replace(/(&lt;\/?)([a-zA-Z0-9-]+)([^&]*?&gt;)/g, '$1<span class="token-tag">$2</span>$3');
+  text = text.replace(/([a-zA-Z-:]+)=(&quot;[^&]*?&quot;)/g, '<span class="token-attr">$1</span>=<span class="token-string">$2</span>');
+  return text;
+}
+
+function highlightCodeBlock(code: string, lang: string | null) {
+  const normalized = (lang ?? "").toLowerCase();
+  if (normalized === "js" || normalized === "javascript" || normalized === "ts" || normalized === "tsx") {
+    return highlightJs(code);
+  }
+  if (normalized === "css") {
+    return highlightCss(code);
+  }
+  if (normalized === "html" || normalized === "xml") {
+    return highlightHtml(code);
+  }
+  return escapeHtml(code);
 }
 
 function flushParagraph(buffer: string[], chunks: string[]) {
@@ -41,18 +114,25 @@ export function renderMarkdownToHtml(markdown: string) {
   const paragraphBuffer: string[] = [];
   let inCodeBlock = false;
   const codeBuffer: string[] = [];
+  let codeLang: string | null = null;
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i] ?? "";
 
     if (line.startsWith("```")) {
+      const detectedLang = line.slice(3).trim();
       if (inCodeBlock) {
-        chunks.push(`<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+        const highlighted = highlightCodeBlock(codeBuffer.join("\n"), codeLang);
+        chunks.push(
+          `<pre><code class="${codeLang ? `language-${escapeAttribute(codeLang)}` : "language-plain"}">${highlighted}</code></pre>`
+        );
         codeBuffer.length = 0;
+        codeLang = null;
         inCodeBlock = false;
       } else {
         flushParagraph(paragraphBuffer, chunks);
         inCodeBlock = true;
+        codeLang = detectedLang || null;
       }
       continue;
     }
@@ -64,6 +144,21 @@ export function renderMarkdownToHtml(markdown: string) {
 
     if (line.trim() === "") {
       flushParagraph(paragraphBuffer, chunks);
+      continue;
+    }
+
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
+      flushParagraph(paragraphBuffer, chunks);
+      chunks.push("<hr />");
+      continue;
+    }
+
+    const imageMatch = line.match(/^!\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)$/);
+    if (imageMatch) {
+      flushParagraph(paragraphBuffer, chunks);
+      chunks.push(
+        `<figure><img src="${escapeAttribute(imageMatch[2])}" alt="${escapeAttribute(imageMatch[1])}" loading="lazy" /></figure>`
+      );
       continue;
     }
 
@@ -120,7 +215,10 @@ export function renderMarkdownToHtml(markdown: string) {
   }
 
   if (inCodeBlock) {
-    chunks.push(`<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`);
+    const highlighted = highlightCodeBlock(codeBuffer.join("\n"), codeLang);
+    chunks.push(
+      `<pre><code class="${codeLang ? `language-${escapeAttribute(codeLang)}` : "language-plain"}">${highlighted}</code></pre>`
+    );
   }
   flushParagraph(paragraphBuffer, chunks);
 
