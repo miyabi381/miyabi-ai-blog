@@ -47,16 +47,16 @@ export default async function PostDetailPage({ params }: Params) {
       {canEdit ? (
         <div className="flex items-center gap-3">
           <Link href={`/posts/${post.id}/edit`} className="rounded-lg bg-ink px-4 py-2 text-white">
-            Edit
+            編集
           </Link>
           <DeletePostButton postId={post.id} />
         </div>
       ) : null}
 
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">Comments</h2>
+        <h2 className="text-xl font-semibold">コメント</h2>
         {comments.length === 0 ? (
-          <p className="card p-4 text-sm text-slate-600">No comments yet.</p>
+          <p className="card p-4 text-sm text-slate-600">まだコメントはありません。</p>
         ) : (
           comments.map((comment) => (
             <article key={comment.id} className="card p-4">
@@ -76,11 +76,11 @@ export default async function PostDetailPage({ params }: Params) {
         <CommentForm postId={post.id} />
       ) : (
         <p className="text-sm text-slate-600">
-          To post a comment, please{" "}
+          コメントするには{" "}
           <Link href="/login" className="font-semibold text-accent">
-            login
+            ログイン
           </Link>
-          .
+          してください。
         </p>
       )}
     </section>

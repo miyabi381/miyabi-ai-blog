@@ -10,7 +10,7 @@ export const runtime = "edge";
 export async function GET(request: NextRequest) {
   const postId = Number(request.nextUrl.searchParams.get("postId"));
   if (!Number.isInteger(postId) || postId <= 0) {
-    return NextResponse.json({ error: "Invalid postId." }, { status: 400 });
+    return NextResponse.json({ error: "投稿IDが不正です。" }, { status: 400 });
   }
 
   const db = await getDb();
@@ -44,13 +44,13 @@ export async function POST(request: NextRequest) {
       content: typeof body?.content === "string" ? body.content : body?.content
     });
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input." }, { status: 400 });
+      return NextResponse.json({ error: "入力内容が不正です。" }, { status: 400 });
     }
 
     const db = await getDb();
     const post = await db.select({ id: posts.id }).from(posts).where(eq(posts.id, parsed.data.postId)).limit(1);
     if (post.length === 0) {
-      return NextResponse.json({ error: "Post not found." }, { status: 404 });
+      return NextResponse.json({ error: "投稿が見つかりません。" }, { status: 404 });
     }
 
     const inserted = await db
@@ -70,6 +70,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ comment: inserted[0] }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Unexpected error." }, { status: 500 });
+    return NextResponse.json({ error: "予期しないエラーが発生しました。" }, { status: 500 });
   }
 }

@@ -30,7 +30,7 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       disabled={loading}
       className="rounded-lg bg-rose-600 px-4 py-2 text-white disabled:opacity-60"
     >
-      {loading ? "Deleting..." : "Delete"}
+      {loading ? "削除中..." : "削除"}
     </button>
   );
 }

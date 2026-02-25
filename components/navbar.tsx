@@ -12,27 +12,27 @@ export async function Navbar() {
         </Link>
         <nav className="flex items-center gap-4 text-sm">
           <Link href="/" className="text-slate-700 hover:text-ink">
-            Posts
+            投稿一覧
           </Link>
           {user ? (
             <>
               <Link href="/editor/new" className="text-slate-700 hover:text-ink">
-                New Post
+                新規投稿
               </Link>
               <Link href={`/profile/${user.username}`} className="text-slate-700 hover:text-ink">
                 {user.username}
               </Link>
               <form action="/api/auth/logout" method="post">
-                <button className="rounded-full bg-ink px-3 py-1.5 text-white">Logout</button>
+                <button className="rounded-full bg-ink px-3 py-1.5 text-white">ログアウト</button>
               </form>
             </>
           ) : (
             <>
               <Link href="/login" className="text-slate-700 hover:text-ink">
-                Login
+                ログイン
               </Link>
               <Link href="/register" className="rounded-full bg-ink px-3 py-1.5 text-white">
-                Sign up
+                新規登録
               </Link>
             </>
           )}
@@ -41,4 +41,3 @@ export async function Navbar() {
     </header>
   );
 }
-

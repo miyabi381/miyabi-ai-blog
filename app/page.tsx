@@ -11,12 +11,12 @@ export default async function HomePage() {
   return (
     <section className="space-y-4">
       <div className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">Blog Platform</p>
-        <h1 className="text-2xl font-bold tracking-tight">Latest Posts</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent">ブログプラットフォーム</p>
+        <h1 className="text-2xl font-bold tracking-tight">最新の投稿</h1>
       </div>
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <p className="card p-6 text-slate-600">No posts yet.</p>
+          <p className="card p-6 text-slate-600">まだ投稿はありません。</p>
         ) : (
           posts.map((post) => (
             <article key={post.id} className="card p-6">

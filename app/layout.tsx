@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 export const metadata: Metadata = {
   title: "Miyabi Blog",
-  description: "Qiita-style blog platform on Cloudflare Pages + D1"
+  description: "Cloudflare Pages + D1 で動作するQiita風ブログプラットフォーム"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

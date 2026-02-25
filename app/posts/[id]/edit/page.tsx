@@ -28,7 +28,7 @@ export default async function EditPostPage({ params }: Params) {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Edit Post</h1>
+      <h1 className="text-2xl font-bold tracking-tight">投稿を編集</h1>
       <PostForm mode="edit" postId={post.id} initialTitle={post.title} initialContent={post.content} />
     </section>
   );

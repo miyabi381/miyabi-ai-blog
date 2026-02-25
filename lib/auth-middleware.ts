@@ -17,7 +17,7 @@ export async function requireAuth(request: NextRequest): Promise<AuthOk | AuthFa
   if (!token) {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Unauthorized." }, { status: 401 })
+      response: NextResponse.json({ error: "認証が必要です。" }, { status: 401 })
     };
   }
 
@@ -27,7 +27,7 @@ export async function requireAuth(request: NextRequest): Promise<AuthOk | AuthFa
   } catch {
     return {
       ok: false,
-      response: NextResponse.json({ error: "Unauthorized." }, { status: 401 })
+      response: NextResponse.json({ error: "認証が必要です。" }, { status: 401 })
     };
   }
 }

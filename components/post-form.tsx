@@ -34,13 +34,13 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
     setLoading(false);
 
     if (!response.ok) {
-      setError(data.error ?? "Could not save post.");
+      setError(data.error ?? "投稿を保存できませんでした。");
       return;
     }
 
     if (mode === "create") {
       if (!data.post?.id) {
-        setError("Could not resolve created post.");
+        setError("作成した投稿を取得できませんでした。");
         return;
       }
       router.push(`/posts/${data.post.id}`);
@@ -53,7 +53,7 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
   return (
     <form onSubmit={onSubmit} className="card space-y-4 p-6">
       <div className="space-y-1">
-        <label className="text-sm font-medium">Title</label>
+        <label className="text-sm font-medium">タイトル</label>
         <input
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
           value={title}
@@ -63,7 +63,7 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium">Content</label>
+        <label className="text-sm font-medium">本文</label>
         <textarea
           rows={14}
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
@@ -78,7 +78,7 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
         disabled={loading}
         className="rounded-lg bg-ink px-4 py-2 font-semibold text-white disabled:opacity-60"
       >
-        {loading ? "Saving..." : mode === "create" ? "Publish" : "Update"}
+        {loading ? "保存中..." : mode === "create" ? "公開する" : "更新する"}
       </button>
     </form>
   );

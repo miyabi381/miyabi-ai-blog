@@ -25,7 +25,7 @@ export function CommentForm({ postId }: CommentFormProps) {
     const data = (await response.json()) as { error?: string };
     setLoading(false);
     if (!response.ok) {
-      setError(data.error ?? "Could not post comment.");
+      setError(data.error ?? "コメントを投稿できませんでした。");
       return;
     }
     setContent("");
@@ -34,7 +34,7 @@ export function CommentForm({ postId }: CommentFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="card mt-6 space-y-3 p-4">
-      <label className="text-sm font-medium">Add comment</label>
+      <label className="text-sm font-medium">コメントを追加</label>
       <textarea
         rows={4}
         className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
@@ -47,7 +47,7 @@ export function CommentForm({ postId }: CommentFormProps) {
         disabled={loading}
         className="rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
-        {loading ? "Posting..." : "Post comment"}
+        {loading ? "投稿中..." : "コメントを投稿"}
       </button>
     </form>
   );

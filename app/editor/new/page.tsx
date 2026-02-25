@@ -12,7 +12,7 @@ export default async function NewPostPage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Create Post</h1>
+      <h1 className="text-2xl font-bold tracking-tight">新規投稿</h1>
       <PostForm mode="create" />
     </section>
   );

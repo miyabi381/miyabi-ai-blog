@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const parsed = registerSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input." }, { status: 400 });
+      return NextResponse.json({ error: "入力内容が不正です。" }, { status: 400 });
     }
 
     const { username, email, password } = parsed.data;
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       getUserByUsername(username)
     ]);
     if (existingEmail || existingUsername) {
-      return NextResponse.json({ error: "User already exists." }, { status: 409 });
+      return NextResponse.json({ error: "このユーザー名またはメールアドレスは既に使われています。" }, { status: 409 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
 
     const created = await getUserByEmail(email);
     if (!created) {
-      return NextResponse.json({ error: "Could not create user." }, { status: 500 });
+      return NextResponse.json({ error: "ユーザーを作成できませんでした。" }, { status: 500 });
     }
 
     await issueAuthCookie({ userId: created.id, username: created.username, email: created.email });
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       user: { id: created.id, username: created.username, email: created.email }
     });
   } catch {
-    return NextResponse.json({ error: "Unexpected error." }, { status: 500 });
+    return NextResponse.json({ error: "予期しないエラーが発生しました。" }, { status: 500 });
   }
 }
 

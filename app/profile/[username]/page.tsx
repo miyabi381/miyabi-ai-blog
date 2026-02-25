@@ -23,13 +23,13 @@ export default async function ProfilePage({ params }: Params) {
       <article className="card p-6">
         <h1 className="text-2xl font-bold">@{user.username}</h1>
         <p className="mt-1 text-sm text-slate-600">{user.email}</p>
-        <p className="mt-1 text-xs text-slate-500">Joined {toJaDateTime(user.createdAt)}</p>
+        <p className="mt-1 text-xs text-slate-500">登録日: {toJaDateTime(user.createdAt)}</p>
       </article>
 
       <div className="space-y-3">
-        <h2 className="text-xl font-semibold">Posts</h2>
+        <h2 className="text-xl font-semibold">投稿</h2>
         {posts.length === 0 ? (
-          <p className="card p-4 text-sm text-slate-600">No posts yet.</p>
+          <p className="card p-4 text-sm text-slate-600">まだ投稿はありません。</p>
         ) : (
           posts.map((post) => (
             <article key={post.id} className="card p-4">

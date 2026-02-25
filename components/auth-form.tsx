@@ -32,7 +32,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     setLoading(false);
 
     if (!response.ok) {
-      setError(data.error ?? "Request failed.");
+      setError(data.error ?? "リクエストに失敗しました。");
       return;
     }
 
@@ -44,7 +44,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     <form onSubmit={onSubmit} className="card space-y-4 p-6">
       {mode === "register" && (
         <div className="space-y-1">
-          <label className="text-sm font-medium">Username</label>
+          <label className="text-sm font-medium">ユーザー名</label>
           <input
             className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
             value={username}
@@ -54,7 +54,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
       )}
       <div className="space-y-1">
-        <label className="text-sm font-medium">Email</label>
+        <label className="text-sm font-medium">メールアドレス</label>
         <input
           type="email"
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
@@ -64,7 +64,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
       <div className="space-y-1">
-        <label className="text-sm font-medium">Password</label>
+        <label className="text-sm font-medium">パスワード</label>
         <input
           type="password"
           className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
@@ -79,7 +79,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         disabled={loading}
         className="w-full rounded-lg bg-ink px-4 py-2 font-semibold text-white disabled:opacity-60"
       >
-        {loading ? "Loading..." : mode === "login" ? "Login" : "Create account"}
+        {loading ? "送信中..." : mode === "login" ? "ログイン" : "アカウント作成"}
       </button>
     </form>
   );
