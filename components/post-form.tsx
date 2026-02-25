@@ -18,6 +18,17 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
   const [content, setContent] = useState(initialContent);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [textColor, setTextColor] = useState("red");
+  const colorSwatch: Record<string, string> = {
+    red: "#dc2626",
+    blue: "#2563eb",
+    green: "#16a34a",
+    orange: "#ea580c",
+    purple: "#9333ea",
+    pink: "#db2777",
+    teal: "#0d9488",
+    gray: "#4b5563"
+  };
 
   function wrapSelection(before: string, after = "") {
     const textarea = textareaRef.current;
@@ -135,9 +146,29 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
           <button type="button" className="rounded border px-2 py-1 text-xs" title="見出し" onClick={() => wrapSelection("## ")}>
             H2
           </button>
-          <button type="button" className="rounded border px-2 py-1 text-xs" title="文字色" onClick={() => wrapSelection("[color:red]", "[/color]")}>
-            <span style={{ color: "#dc2626" }}>A</span>
+          <button
+            type="button"
+            className="rounded border px-2 py-1 text-xs"
+            title="文字色"
+            onClick={() => wrapSelection(`[color:${textColor}]`, "[/color]")}
+          >
+            <span style={{ color: colorSwatch[textColor] ?? "#111827" }}>A</span>
           </button>
+          <select
+            className="rounded border px-2 py-1 text-xs"
+            value={textColor}
+            onChange={(event) => setTextColor(event.target.value)}
+            title="色を選択"
+          >
+            <option value="red">赤</option>
+            <option value="blue">青</option>
+            <option value="green">緑</option>
+            <option value="orange">オレンジ</option>
+            <option value="purple">紫</option>
+            <option value="pink">ピンク</option>
+            <option value="teal">ティール</option>
+            <option value="gray">グレー</option>
+          </select>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="リンク" onClick={() => wrapSelection("[リンクテキスト](", "https://example.com)")}>
             🔗
           </button>

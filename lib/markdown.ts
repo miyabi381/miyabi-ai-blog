@@ -59,14 +59,36 @@ function formatInline(text: string) {
 }
 
 function highlightJs(code: string) {
-  let text = escapeHtml(code);
+  const placeholders = new Map<string, string>();
+  const indexToKey = (index: number) => {
+    let n = index;
+    let out = "";
+    do {
+      out = String.fromCharCode(97 + (n % 26)) + out;
+      n = Math.floor(n / 26) - 1;
+    } while (n >= 0);
+    return `__TOK_${out}__`;
+  };
+  const stash = (source: string, className: string) => {
+    const key = indexToKey(placeholders.size);
+    placeholders.set(key, `<span class="${className}">${escapeHtml(source)}</span>`);
+    return key;
+  };
+
+  let working = code.replace(/(["'`])(?:\\.|(?!\1)[\s\S])*?\1/g, (match) => stash(match, "token-string"));
+  working = working.replace(/\/\*[\s\S]*?\*\//g, (match) => stash(match, "token-comment"));
+  working = working.replace(/\/\/.*$/gm, (match) => stash(match, "token-comment"));
+
+  let text = escapeHtml(working);
   text = text.replace(
     /\b(const|let|var|function|return|if|else|for|while|switch|case|break|continue|new|class|import|from|export|async|await|try|catch|finally|throw)\b/g,
     '<span class="token-keyword">$1</span>'
   );
-  text = text.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
   text = text.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="token-number">$1</span>');
-  text = text.replace(/(\/\/.*)$/gm, '<span class="token-comment">$1</span>');
+
+  for (const [key, html] of placeholders.entries()) {
+    text = text.replaceAll(key, html);
+  }
   return text;
 }
 
@@ -89,15 +111,30 @@ function highlightHtml(code: string) {
 function highlightCodeBlock(code: string, lang: string | null) {
   const normalized = (lang ?? "").toLowerCase();
   if (normalized === "js" || normalized === "javascript" || normalized === "ts" || normalized === "tsx") {
-    return highlightJs(code);
+    return { html: highlightJs(code), label: normalized === "js" ? "javascript" : normalized };
   }
   if (normalized === "css") {
-    return highlightCss(code);
+    return { html: highlightCss(code), label: "css" };
   }
   if (normalized === "html" || normalized === "xml") {
-    return highlightHtml(code);
+    return { html: highlightHtml(code), label: normalized === "xml" ? "xml" : "html" };
   }
-  return escapeHtml(code);
+  if (!normalized) {
+    const trimmed = code.trim();
+    if (/<[a-zA-Z][\w-]*(\s[^>]*)?>[\s\S]*<\/[a-zA-Z][\w-]*>|<!DOCTYPE html>/i.test(trimmed)) {
+      return { html: highlightHtml(code), label: "html" };
+    }
+    if (/[.#]?[a-zA-Z][\w-]*\s*\{[\s\S]*:[\s\S]*;\s*}/.test(trimmed)) {
+      return { html: highlightCss(code), label: "css" };
+    }
+    if (
+      /\b(const|let|var|function|return|import|export|class|async|await)\b/.test(trimmed) ||
+      /=>/.test(trimmed)
+    ) {
+      return { html: highlightJs(code), label: "javascript" };
+    }
+  }
+  return { html: escapeHtml(code), label: normalized || "plain" };
 }
 
 function flushParagraph(buffer: string[], chunks: string[]) {
@@ -124,7 +161,7 @@ export function renderMarkdownToHtml(markdown: string) {
       if (inCodeBlock) {
         const highlighted = highlightCodeBlock(codeBuffer.join("\n"), codeLang);
         chunks.push(
-          `<pre><code class="${codeLang ? `language-${escapeAttribute(codeLang)}` : "language-plain"}">${highlighted}</code></pre>`
+          `<div class="code-block"><span class="code-lang">${escapeAttribute(highlighted.label)}</span><pre><code class="language-${escapeAttribute(highlighted.label)}">${highlighted.html}</code></pre></div>`
         );
         codeBuffer.length = 0;
         codeLang = null;
@@ -217,7 +254,7 @@ export function renderMarkdownToHtml(markdown: string) {
   if (inCodeBlock) {
     const highlighted = highlightCodeBlock(codeBuffer.join("\n"), codeLang);
     chunks.push(
-      `<pre><code class="${codeLang ? `language-${escapeAttribute(codeLang)}` : "language-plain"}">${highlighted}</code></pre>`
+      `<div class="code-block"><span class="code-lang">${escapeAttribute(highlighted.label)}</span><pre><code class="language-${escapeAttribute(highlighted.label)}">${highlighted.html}</code></pre></div>`
     );
   }
   flushParagraph(paragraphBuffer, chunks);

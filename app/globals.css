@@ -82,7 +82,8 @@ a {
   overflow-x: auto;
   border-radius: 0.75rem;
   background: #0f172a;
-  padding: 0.85rem 1rem;
+  padding: 1.8rem 1rem 0.85rem;
+  margin: 0;
 }
 
 .markdown-body pre code {
@@ -135,6 +136,24 @@ a {
 
 .markdown-body .token-attr {
   color: #67e8f9;
+}
+
+.markdown-body .code-block {
+  position: relative;
+}
+
+.markdown-body .code-lang {
+  position: absolute;
+  right: 0.65rem;
+  top: 0.5rem;
+  z-index: 1;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.28);
+  padding: 0.1rem 0.5rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
+  color: #e2e8f0;
+  text-transform: lowercase;
 }
 
 .clamp-4-lines {
