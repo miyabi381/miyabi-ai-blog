@@ -40,8 +40,18 @@ type RichMarkdownEditorProps = {
 function Toolbar() {
   const [editor] = useLexicalComposerContext();
 
-  function formatSelectionOnly(format: "bold" | "italic" | "underline" | "strikethrough") {
+  function withSelection(action: () => void) {
     editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection)) {
+        return;
+      }
+      action();
+    });
+  }
+
+  function formatSelectionOnly(format: "bold" | "italic" | "underline" | "strikethrough") {
+    withSelection(() => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection) || selection.isCollapsed()) {
         return;
@@ -51,7 +61,7 @@ function Toolbar() {
   }
 
   function setBlock(type: "paragraph" | "h2" | "h3" | "quote" | "code") {
-    editor.update(() => {
+    withSelection(() => {
       const selection = $getSelection();
       if (!$isRangeSelection(selection)) {
         return;
@@ -77,6 +87,15 @@ function Toolbar() {
   }
 
   function toggleLink() {
+    let hasSelectedText = false;
+    editor.getEditorState().read(() => {
+      const selection = $getSelection();
+      hasSelectedText = Boolean($isRangeSelection(selection) && !selection.isCollapsed());
+    });
+    if (!hasSelectedText) {
+      return;
+    }
+
     const url = window.prompt("リンクURLを入力してください", "https://");
     if (url === null) {
       return;
@@ -87,22 +106,22 @@ function Toolbar() {
 
   return (
     <div className="rt-toolbar">
-      <button type="button" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>Undo</button>
-      <button type="button" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>Redo</button>
-      <button type="button" onClick={() => formatSelectionOnly("bold")}>B</button>
-      <button type="button" onClick={() => formatSelectionOnly("italic")}>I</button>
-      <button type="button" onClick={() => formatSelectionOnly("underline")}>U</button>
-      <button type="button" onClick={() => formatSelectionOnly("strikethrough")}>S</button>
-      <button type="button" onClick={toggleLink}>Link</button>
-      <button type="button" onClick={() => setBlock("paragraph")}>P</button>
-      <button type="button" onClick={() => setBlock("h2")}>H2</button>
-      <button type="button" onClick={() => setBlock("h3")}>H3</button>
-      <button type="button" onClick={() => setBlock("quote")}>Quote</button>
-      <button type="button" onClick={() => setBlock("code")}>Code</button>
-      <button type="button" onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}>List</button>
-      <button type="button" onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}>1.</button>
-      <button type="button" onClick={() => editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined)}>Task</button>
-      <button type="button" onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}>HR</button>
+      <button type="button" title="元に戻す" aria-label="元に戻す" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>Undo</button>
+      <button type="button" title="やり直す" aria-label="やり直す" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>Redo</button>
+      <button type="button" title="太字（選択文字に適用）" aria-label="太字（選択文字に適用）" onClick={() => formatSelectionOnly("bold")}>B</button>
+      <button type="button" title="斜体（選択文字に適用）" aria-label="斜体（選択文字に適用）" onClick={() => formatSelectionOnly("italic")}>I</button>
+      <button type="button" title="下線（選択文字に適用）" aria-label="下線（選択文字に適用）" onClick={() => formatSelectionOnly("underline")}>U</button>
+      <button type="button" title="打ち消し線（選択文字に適用）" aria-label="打ち消し線（選択文字に適用）" onClick={() => formatSelectionOnly("strikethrough")}>S</button>
+      <button type="button" title="リンク（選択文字に適用）" aria-label="リンク（選択文字に適用）" onClick={toggleLink}>Link</button>
+      <button type="button" title="通常段落" aria-label="通常段落" onClick={() => setBlock("paragraph")}>P</button>
+      <button type="button" title="見出し2" aria-label="見出し2" onClick={() => setBlock("h2")}>H2</button>
+      <button type="button" title="見出し3" aria-label="見出し3" onClick={() => setBlock("h3")}>H3</button>
+      <button type="button" title="引用ブロック" aria-label="引用ブロック" onClick={() => setBlock("quote")}>Quote</button>
+      <button type="button" title="コードブロック" aria-label="コードブロック" onClick={() => setBlock("code")}>Code</button>
+      <button type="button" title="箇条書きリスト" aria-label="箇条書きリスト" onClick={() => editor.dispatchCommand(INSERT_UNORDERED_LIST_COMMAND, undefined)}>List</button>
+      <button type="button" title="番号付きリスト" aria-label="番号付きリスト" onClick={() => editor.dispatchCommand(INSERT_ORDERED_LIST_COMMAND, undefined)}>1.</button>
+      <button type="button" title="チェックリスト" aria-label="チェックリスト" onClick={() => editor.dispatchCommand(INSERT_CHECK_LIST_COMMAND, undefined)}>Task</button>
+      <button type="button" title="仕切り線" aria-label="仕切り線" onClick={() => editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined)}>HR</button>
     </div>
   );
 }
