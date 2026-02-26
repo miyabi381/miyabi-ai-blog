@@ -14,12 +14,11 @@ type PostFormProps = {
 export function PostForm({ mode, postId, initialTitle = "", initialContent = "" }: PostFormProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const previewLayerRef = useRef<HTMLDivElement | null>(null);
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [richInput, setRichInput] = useState(true);
+  const [viewMode, setViewMode] = useState<"split" | "edit" | "preview">("split");
   const [textColor, setTextColor] = useState("red");
   const colorSwatch: Record<string, string> = {
     red: "#dc2626",
@@ -31,6 +30,16 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
     teal: "#0d9488",
     gray: "#4b5563"
   };
+  const blockTemplates: Array<{ label: string; text: string }> = [
+    { label: "セクション", text: "\n## セクションタイトル\n\n本文を入力\n" },
+    { label: "小見出し", text: "\n### 小見出し\n\n本文を入力\n" },
+    { label: "仕切り線", text: "\n---\n" },
+    { label: "画像ブロック", text: "\n![画像説明](https://example.com/image.png)\n" },
+    { label: "引用ブロック", text: "\n> 引用文\n" },
+    { label: "チェックリスト", text: "\n- [ ] タスク1\n- [ ] タスク2\n" },
+    { label: "コードブロック", text: "\n```ts\n\n```\n" },
+    { label: "リンクブロック", text: "\n[リンクテキスト](https://example.com)\n" }
+  ];
 
   function wrapSelection(before: string, after = "") {
     const textarea = textareaRef.current;
@@ -49,13 +58,6 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
       const caret = start + inserted.length;
       textarea.setSelectionRange(caret, caret);
     });
-  }
-
-  function syncPreviewScroll() {
-    if (!textareaRef.current || !previewLayerRef.current) {
-      return;
-    }
-    previewLayerRef.current.scrollTop = textareaRef.current.scrollTop;
   }
 
   function insertPrefixForLines(prefix: string) {
@@ -179,13 +181,13 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
             <option value="gray">グレー</option>
           </select>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="リンク" onClick={() => wrapSelection("[リンクテキスト](", "https://example.com)")}>
-            🔗
+            Link
           </button>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="画像URL" onClick={() => wrapSelection("![画像説明](", "https://example.com/image.png)")}>
-            🖼️
+            Img
           </button>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="水平線" onClick={() => insertAtCursor("\n---\n")}>
-            ―
+            HR
           </button>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="インラインコード" onClick={() => wrapSelection("`", "`")}>
             {"</>"}
@@ -200,46 +202,74 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
             CSS
           </button>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="箇条書き" onClick={() => insertPrefixForLines("- ")}>
-            •
+            List
           </button>
           <button type="button" className="rounded border px-2 py-1 text-xs" title="引用" onClick={() => insertPrefixForLines("> ")}>
-            “
+            Quote
           </button>
         </div>
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs text-slate-600">
-            <input
-              type="checkbox"
-              checked={richInput}
-              onChange={(event) => setRichInput(event.target.checked)}
-            />
-            入力中に装飾を反映する
-          </label>
-          <div className="relative min-h-[22rem] rounded-lg border border-slate-300">
-            {richInput ? (
-              <div
-                ref={previewLayerRef}
-                className="pointer-events-none absolute inset-0 overflow-auto px-3 py-2"
-                aria-hidden="true"
-              >
-                <MarkdownContent markdown={content || " "} className="text-slate-800" />
-              </div>
-            ) : null}
-            <textarea
-              ref={textareaRef}
-              rows={14}
-              className={`relative z-10 w-full resize-y rounded-lg px-3 py-2 outline-none focus:border-accent ${
-                richInput
-                  ? "min-h-[22rem] border-transparent bg-transparent text-transparent caret-ink selection:bg-sky-200/60"
-                  : "border border-slate-300"
-              }`}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              onScroll={syncPreviewScroll}
-              required
-              minLength={10}
-            />
-          </div>
+
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-semibold tracking-wide text-slate-500">表示モード</span>
+          <button
+            type="button"
+            onClick={() => setViewMode("split")}
+            className={`rounded border px-2 py-1 text-xs ${viewMode === "split" ? "bg-slate-800 text-white" : ""}`}
+          >
+            分割
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("edit")}
+            className={`rounded border px-2 py-1 text-xs ${viewMode === "edit" ? "bg-slate-800 text-white" : ""}`}
+          >
+            編集
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("preview")}
+            className={`rounded border px-2 py-1 text-xs ${viewMode === "preview" ? "bg-slate-800 text-white" : ""}`}
+          >
+            プレビュー
+          </button>
+        </div>
+
+        <div className="mb-2 flex flex-wrap gap-2">
+          <span className="w-full text-xs font-semibold tracking-wide text-slate-500">ブロック挿入</span>
+          {blockTemplates.map((template) => (
+            <button
+              key={template.label}
+              type="button"
+              className="rounded border border-slate-300 px-2 py-1 text-xs"
+              onClick={() => insertAtCursor(template.text)}
+            >
+              {template.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`grid gap-3 ${viewMode === "split" ? "md:grid-cols-2" : ""}`}>
+          {(viewMode === "split" || viewMode === "edit") && (
+            <label className="space-y-1">
+              <span className="text-xs font-semibold tracking-wide text-slate-500">エディタ</span>
+              <textarea
+                ref={textareaRef}
+                rows={14}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                required
+                minLength={10}
+              />
+            </label>
+          )}
+
+          {(viewMode === "split" || viewMode === "preview") && (
+            <div className="space-y-1 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-semibold tracking-wide text-slate-500">ライブプレビュー</p>
+              <MarkdownContent markdown={content || " "} />
+            </div>
+          )}
         </div>
       </div>
       {error ? <p className="text-sm text-rose-600">{error}</p> : null}
