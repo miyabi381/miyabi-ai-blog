@@ -6,7 +6,7 @@ type CloudflareEnv = {
   DB: D1Database;
 };
 
-type DbInstance = any;
+type DbInstance = ReturnType<typeof drizzleD1<typeof schema>>;
 
 let localDbPromise: Promise<DbInstance> | null = null;
 
@@ -29,8 +29,10 @@ async function getLocalDb(): Promise<DbInstance> {
   }
 
   // Prevent edge/worker bundlers from statically resolving native sqlite modules.
-  const dynamicImport = new Function("p", "return import(p)") as (path: string) => Promise<any>;
-  localDbPromise = dynamicImport("./db.local").then((mod) => mod.getLocalDb(schema));
+  const dynamicImport = new Function("p", "return import(p)") as (path: string) => Promise<{
+    getLocalDb: (dbSchema: typeof schema) => unknown;
+  }>;
+  localDbPromise = dynamicImport("./db.local").then((mod) => mod.getLocalDb(schema) as DbInstance);
   return localDbPromise;
 }
 

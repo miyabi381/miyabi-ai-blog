@@ -3,9 +3,9 @@ import path from "node:path";
 import Database from "better-sqlite3";
 import { drizzle as drizzleSqlite } from "drizzle-orm/better-sqlite3";
 
-type DbInstance = any;
+type LocalSchema = Record<string, unknown>;
 
-let localDb: DbInstance | null = null;
+let localDb: unknown = null;
 
 function getLocalDbPath() {
   const fromEnv = process.env.LOCAL_DB_FILE?.trim();
@@ -42,7 +42,7 @@ function applyLocalMigrations(db: Database.Database) {
   }
 }
 
-export function getLocalDb(schema: unknown): DbInstance {
+export function getLocalDb(schema: LocalSchema) {
   if (localDb) {
     return localDb;
   }
@@ -55,6 +55,6 @@ export function getLocalDb(schema: unknown): DbInstance {
   sqlite.pragma("foreign_keys = ON");
   applyLocalMigrations(sqlite);
 
-  localDb = drizzleSqlite(sqlite, { schema: schema as never });
+  localDb = drizzleSqlite(sqlite, { schema });
   return localDb;
 }
