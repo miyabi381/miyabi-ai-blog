@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/components/avatar";
+import { MarkdownContent } from "@/components/markdown-content";
 import { ProfileAvatarForm } from "@/components/profile-avatar-form";
 import { getPostsByUserId, getUserByUsername } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
@@ -45,13 +46,13 @@ export default async function ProfilePage({ params }: Params) {
           <p className="card p-4 text-sm text-slate-600">まだ投稿はありません。</p>
         ) : (
           posts.map((post) => (
-            <article key={post.id} className="card p-4">
-              <Link href={`/posts/${post.id}`} className="font-semibold hover:text-accent">
-                {post.title}
-              </Link>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700 clamp-4-lines">{post.content}</p>
-              <p className="mt-1 text-xs text-slate-500">{toJaDateTime(post.createdAt)}</p>
-            </article>
+            <Link key={post.id} href={`/posts/${post.id}`} className="block">
+              <article className="card p-4 transition hover:border-slate-300 hover:shadow-md">
+                <h3 className="font-semibold hover:text-accent">{post.title}</h3>
+                <MarkdownContent markdown={post.content} className="markdown-preview mt-2 text-sm text-slate-700" />
+                <p className="mt-1 text-xs text-slate-500">{toJaDateTime(post.createdAt)}</p>
+              </article>
+            </Link>
           ))
         )}
       </div>

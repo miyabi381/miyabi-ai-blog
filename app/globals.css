@@ -162,3 +162,14 @@ a {
   -webkit-line-clamp: 4;
   overflow: hidden;
 }
+
+.markdown-preview {
+  max-height: 6.8em;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+.markdown-preview > :first-child {
+  margin-top: 0;
+}

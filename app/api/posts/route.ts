@@ -4,6 +4,7 @@ import { posts } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
 import { getPostById, getPostList } from "@/lib/data";
+import { toDbTimestampJst } from "@/lib/format";
 import { postSchema } from "@/lib/validators";
 
 export const runtime = "edge";
@@ -48,7 +49,8 @@ export async function POST(request: NextRequest) {
       .values({
         userId: auth.session.userId,
         title: parsed.data.title,
-        content: parsed.data.content
+        content: parsed.data.content,
+        createdAt: toDbTimestampJst()
       })
       .returning({
         id: posts.id,

@@ -4,6 +4,7 @@ import { users } from "@/db/schema";
 import { issueAuthCookie } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { getUserByEmail, getUserByUsername } from "@/lib/data";
+import { toDbTimestampJst } from "@/lib/format";
 import { registerSchema } from "@/lib/validators";
 
 export const runtime = "edge";
@@ -27,7 +28,13 @@ export async function POST(request: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const db = await getDb();
-    await db.insert(users).values({ username, displayName: username, email, hashedPassword });
+    await db.insert(users).values({
+      username,
+      displayName: username,
+      email,
+      hashedPassword,
+      createdAt: toDbTimestampJst()
+    });
 
     const created = await getUserByEmail(email);
     if (!created) {
