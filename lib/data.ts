@@ -222,7 +222,12 @@ export async function getCommentsByPostId(postId: number): Promise<CommentItem[]
 
 export async function getUserByEmail(email: string): Promise<(typeof users.$inferSelect) | null> {
   const db = await getDb();
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const normalized = email.trim().toLowerCase();
+  const result = await db
+    .select()
+    .from(users)
+    .where(sql`lower(${users.email}) = ${normalized}`)
+    .limit(1);
   return result[0] ?? null;
 }
 

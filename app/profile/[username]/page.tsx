@@ -45,7 +45,7 @@ export default async function ProfilePage({ params }: Params) {
           <div>
             <h1 className="text-2xl font-bold">{user.displayName ?? user.username}</h1>
             <p className="mt-1 text-sm text-slate-600">@{user.username}</p>
-            <p className="mt-1 text-sm text-slate-600">{user.email}</p>
+            {canEditProfile ? <p className="mt-1 text-sm text-slate-600">{user.email}</p> : null}
             <p className="mt-1 text-xs text-slate-500">登録日: {toJaDateTime(user.createdAt)}</p>
             <p className="mt-1 text-xs text-slate-500">フォロー中: {followingUsers.length}</p>
           </div>

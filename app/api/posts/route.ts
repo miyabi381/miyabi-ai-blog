@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { NextResponse, type NextRequest } from "next/server";
+import type { z } from "zod";
 import { posts } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
 import { getPostById, getPostList } from "@/lib/data";
 import { toDbTimestampJst } from "@/lib/format";
+import { ensureSameOriginRequest } from "@/lib/security";
 import { postSchema } from "@/lib/validators";
 
 export const runtime = "edge";
@@ -13,6 +15,19 @@ function parsePostId(value: string | null) {
   if (!value) return null;
   const id = Number(value);
   return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function postValidationMessage(error: z.ZodError<{ title: string; content: string }>) {
+  for (const issue of error.issues) {
+    const field = issue.path[0];
+    if (field === "title") {
+      return "タイトルは3文字以上120文字以内で入力してください。";
+    }
+    if (field === "content") {
+      return "本文は10文字以上で入力してください。";
+    }
+  }
+  return "入力内容が不正です。";
 }
 
 export async function GET(request: NextRequest) {
@@ -32,6 +47,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   try {
     const auth = await requireAuth(request);
     if (!auth.ok) {
@@ -41,7 +61,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = postSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "入力内容が不正です。" }, { status: 400 });
+      return NextResponse.json({ error: postValidationMessage(parsed.error) }, { status: 400 });
     }
 
     const db = await getDb();
@@ -73,6 +93,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   const postId = parsePostId(request.nextUrl.searchParams.get("postId"));
   if (!postId) {
     return NextResponse.json({ error: "投稿IDが不正です。" }, { status: 400 });
@@ -87,7 +112,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const parsed = postSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "入力内容が不正です。" }, { status: 400 });
+      return NextResponse.json({ error: postValidationMessage(parsed.error) }, { status: 400 });
     }
 
     const current = await getPostById(postId);
@@ -109,6 +134,11 @@ export async function PATCH(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   const postId = parsePostId(request.nextUrl.searchParams.get("postId"));
   if (!postId) {
     return NextResponse.json({ error: "投稿IDが不正です。" }, { status: 400 });

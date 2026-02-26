@@ -4,6 +4,7 @@ import { users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
 import { getFollowState, toggleFollow } from "@/lib/data";
+import { ensureSameOriginRequest } from "@/lib/security";
 
 export const runtime = "edge";
 
@@ -13,6 +14,11 @@ function parseTargetUserId(value: unknown) {
 }
 
 export async function POST(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   const auth = await requireAuth(request);
   if (!auth.ok) {
     return auth.response;

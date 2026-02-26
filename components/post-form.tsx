@@ -43,6 +43,8 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
     if (!response.ok) {
       if (data.error?.includes("本文")) {
         setContentError(data.error);
+      } else if (data.error?.includes("タイトル")) {
+        setError(data.error);
       } else {
         setError(data.error ?? "投稿を保存できませんでした。");
       }

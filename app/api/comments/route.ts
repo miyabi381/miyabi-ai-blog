@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { comments, posts, users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
+import { ensureSameOriginRequest } from "@/lib/security";
 import { commentSchema } from "@/lib/validators";
 
 export const runtime = "edge";
@@ -83,6 +84,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   const auth = await requireAuth(request);
   if (!auth.ok) {
     return auth.response;

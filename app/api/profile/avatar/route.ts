@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { users } from "@/db/schema";
 import { requireAuth } from "@/lib/auth-middleware";
 import { getDb } from "@/lib/db";
+import { ensureSameOriginRequest } from "@/lib/security";
 import { profileSettingsSchema } from "@/lib/validators";
 
 export const runtime = "edge";
@@ -16,6 +17,11 @@ function isMissingColumnError(error: unknown) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const csrfError = ensureSameOriginRequest(request);
+  if (csrfError) {
+    return csrfError;
+  }
+
   const auth = await requireAuth(request);
   if (!auth.ok) {
     return auth.response;

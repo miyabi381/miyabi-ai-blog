@@ -26,12 +26,16 @@ Next.js 14 App Router / TypeScript / TailwindCSS / Drizzle ORM / JWT 認証を�
 - 作成 / 編集 / 削除 / 一覧 / 詳細
 - 新着順取得
 - 投稿日時表示（日本形式）
+- リッチMarkdownエディタ（見出し / 引用 / リスト / チェックリスト / リンク / 区切り線）
 - コメント
 - 投稿 / 一覧表示
 - ログインユーザーのみ投稿可能
 - プロフィール
 - ユーザー情報表示
 - ユーザー投稿一覧
+- 表示名・アバター更新
+- リアクション（いいね / お気に入り）
+- フォロー / フォロー解除
 
 ## API
 
@@ -44,8 +48,12 @@ Next.js 14 App Router / TypeScript / TailwindCSS / Drizzle ORM / JWT 認証を�
 - `GET /api/posts?postId=`
 - `PATCH /api/posts?postId=`
 - `DELETE /api/posts?postId=`
+- `GET /api/posts/reactions?postId=`
+- `POST /api/posts/reactions`
 - `GET /api/comments?postId=`
 - `POST /api/comments`
+- `POST /api/users/follows`
+- `PATCH /api/profile/avatar`
 
 ## Local Setup
 
@@ -126,11 +134,17 @@ npm run pages:deploy
 ## D1 Schema
 
 - `users`
-- `id`, `username`, `email`, `hashed_password`, `created_at`
+- `id`, `username`, `display_name`, `email`, `avatar_url`, `hashed_password`, `created_at`
 - `posts`
 - `id`, `user_id`, `title`, `content`, `created_at`
 - `comments`
-- `id`, `post_id`, `user_id`, `content`, `created_at`
+- `id`, `post_id`, `user_id`, `parent_comment_id`, `content`, `created_at`
+- `post_likes`
+- `id`, `post_id`, `user_id`, `created_at`
+- `post_favorites`
+- `id`, `post_id`, `user_id`, `created_at`
+- `user_follows`
+- `id`, `follower_user_id`, `following_user_id`, `created_at`
 
 ## Important Files
 
