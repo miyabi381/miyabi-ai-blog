@@ -27,7 +27,6 @@ import {
   $createParagraphNode,
   $getSelection,
   $isRangeSelection,
-  FORMAT_TEXT_COMMAND,
   REDO_COMMAND,
   UNDO_COMMAND
 } from "lexical";
@@ -64,7 +63,10 @@ function Toolbar() {
       if (!$isRangeSelection(selection) || selection.isCollapsed()) {
         return;
       }
-      editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+      selection.formatText(format);
+      const endPoint = selection.isBackward() ? selection.anchor : selection.focus;
+      selection.anchor.set(endPoint.key, endPoint.offset, endPoint.type);
+      selection.focus.set(endPoint.key, endPoint.offset, endPoint.type);
       resetPendingInlineFormat();
     });
   }
