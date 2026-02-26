@@ -3,7 +3,14 @@
 import { useMemo } from "react";
 import { $createCodeNode, CodeNode } from "@lexical/code";
 import { AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
-import { ListItemNode, ListNode, INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list";
+import {
+  ListItemNode,
+  ListNode,
+  INSERT_CHECK_LIST_COMMAND,
+  INSERT_ORDERED_LIST_COMMAND,
+  INSERT_UNORDERED_LIST_COMMAND,
+  REMOVE_LIST_COMMAND
+} from "@lexical/list";
 import { $convertFromMarkdownString, $convertToMarkdownString, CHECK_LIST, TRANSFORMERS } from "@lexical/markdown";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -22,8 +29,11 @@ import { $setBlocksType } from "@lexical/selection";
 import { $createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode } from "@lexical/rich-text";
 import {
   $createParagraphNode,
+  $isElementNode,
   $getSelection,
   $isRangeSelection,
+  $isTextNode,
+  type LexicalNode,
   REDO_COMMAND,
   UNDO_COMMAND
 } from "lexical";
@@ -37,6 +47,22 @@ const MARKDOWN_TRANSFORMERS = [CHECK_LIST, ...TRANSFORMERS];
 
 function Toolbar() {
   const [editor] = useLexicalComposerContext();
+
+  function clearInlineFormatting(node: LexicalNode) {
+    if ($isTextNode(node)) {
+      node.setFormat(0);
+      node.setStyle("");
+      return;
+    }
+
+    if ($isElementNode(node)) {
+      node.setTextFormat(0);
+      node.setTextStyle("");
+      for (const child of node.getChildren()) {
+        clearInlineFormatting(child);
+      }
+    }
+  }
 
   function resetPendingInlineFormat() {
     const selection = $getSelection();
@@ -77,7 +103,14 @@ function Toolbar() {
         return;
       }
       if (type === "paragraph") {
+        editor.dispatchCommand(REMOVE_LIST_COMMAND, undefined);
+        editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
         $setBlocksType(selection, () => $createParagraphNode());
+        for (const node of selection.getNodes()) {
+          clearInlineFormatting(node);
+        }
+        selection.setFormat(0);
+        selection.setStyle("");
         return;
       }
       if (type === "h2") {
