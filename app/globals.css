@@ -158,6 +158,46 @@ a {
   outline: none;
 }
 
+.rt-editor ul,
+.rt-ul {
+  margin: 0.6rem 0;
+  padding-left: 1.3rem;
+  list-style: disc;
+}
+
+.rt-editor ol,
+.rt-ol {
+  margin: 0.6rem 0;
+  padding-left: 1.3rem;
+  list-style: decimal;
+}
+
+.rt-editor li,
+.rt-li {
+  margin: 0.2rem 0;
+}
+
+.rt-editor li[role="checkbox"],
+.rt-li-checked,
+.rt-li-unchecked {
+  list-style: none;
+  margin-left: -1.3rem;
+}
+
+.rt-editor li[role="checkbox"]::before {
+  display: inline-block;
+  width: 1.1rem;
+  margin-right: 0.2rem;
+}
+
+.rt-editor li[role="checkbox"][aria-checked="true"]::before {
+  content: "☑";
+}
+
+.rt-editor li[role="checkbox"][aria-checked="false"]::before {
+  content: "☐";
+}
+
 .rt-paragraph {
   margin: 0.6rem 0;
 }

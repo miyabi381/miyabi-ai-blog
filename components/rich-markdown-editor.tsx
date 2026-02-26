@@ -40,6 +40,14 @@ type RichMarkdownEditorProps = {
 function Toolbar() {
   const [editor] = useLexicalComposerContext();
 
+  function resetPendingInlineFormat() {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) {
+      return;
+    }
+    selection.setFormat(0);
+  }
+
   function withSelection(action: () => void) {
     editor.update(() => {
       const selection = $getSelection();
@@ -57,6 +65,7 @@ function Toolbar() {
         return;
       }
       editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+      resetPendingInlineFormat();
     });
   }
 
@@ -140,6 +149,16 @@ export function RichMarkdownEditor({ initialMarkdown, onChangeMarkdown }: RichMa
           h1: "rt-h1",
           h2: "rt-h2",
           h3: "rt-h3"
+        },
+        list: {
+          ul: "rt-ul",
+          ol: "rt-ol",
+          listitem: "rt-li",
+          nested: {
+            listitem: "rt-li-nested"
+          },
+          listitemChecked: "rt-li-checked",
+          listitemUnchecked: "rt-li-unchecked"
         },
         text: {
           bold: "rt-bold",
