@@ -114,7 +114,14 @@ function Toolbar() {
   }
 
   return (
-    <div className="rt-toolbar">
+    <div
+      className="rt-toolbar"
+      onMouseDown={(event) => {
+        if ((event.target as HTMLElement).closest("button")) {
+          event.preventDefault();
+        }
+      }}
+    >
       <button type="button" title="元に戻す" aria-label="元に戻す" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>Undo</button>
       <button type="button" title="やり直す" aria-label="やり直す" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>Redo</button>
       <button type="button" title="太字（選択文字に適用）" aria-label="太字（選択文字に適用）" onClick={() => formatSelectionOnly("bold")}>B</button>
