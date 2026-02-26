@@ -40,6 +40,16 @@ type RichMarkdownEditorProps = {
 function Toolbar() {
   const [editor] = useLexicalComposerContext();
 
+  function formatSelectionOnly(format: "bold" | "italic" | "underline" | "strikethrough") {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (!$isRangeSelection(selection) || selection.isCollapsed()) {
+        return;
+      }
+      editor.dispatchCommand(FORMAT_TEXT_COMMAND, format);
+    });
+  }
+
   function setBlock(type: "paragraph" | "h2" | "h3" | "quote" | "code") {
     editor.update(() => {
       const selection = $getSelection();
@@ -79,10 +89,10 @@ function Toolbar() {
     <div className="rt-toolbar">
       <button type="button" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}>Undo</button>
       <button type="button" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}>Redo</button>
-      <button type="button" onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold")}>B</button>
-      <button type="button" onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic")}>I</button>
-      <button type="button" onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline")}>U</button>
-      <button type="button" onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough")}>S</button>
+      <button type="button" onClick={() => formatSelectionOnly("bold")}>B</button>
+      <button type="button" onClick={() => formatSelectionOnly("italic")}>I</button>
+      <button type="button" onClick={() => formatSelectionOnly("underline")}>U</button>
+      <button type="button" onClick={() => formatSelectionOnly("strikethrough")}>S</button>
       <button type="button" onClick={toggleLink}>Link</button>
       <button type="button" onClick={() => setBlock("paragraph")}>P</button>
       <button type="button" onClick={() => setBlock("h2")}>H2</button>

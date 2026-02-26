@@ -158,11 +158,35 @@ a {
   outline: none;
 }
 
+.rt-paragraph {
+  margin: 0.6rem 0;
+}
+
 .rt-placeholder {
   position: absolute;
   margin: 0.75rem;
   color: #94a3b8;
   pointer-events: none;
+}
+
+.rt-h1,
+.rt-h2,
+.rt-h3 {
+  margin: 1rem 0 0.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.rt-h1 {
+  font-size: 2rem;
+}
+
+.rt-h2 {
+  font-size: 1.5rem;
+}
+
+.rt-h3 {
+  font-size: 1.25rem;
 }
 
 .rt-quote {
