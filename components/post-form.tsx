@@ -14,10 +14,12 @@ type PostFormProps = {
 export function PostForm({ mode, postId, initialTitle = "", initialContent = "" }: PostFormProps) {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const previewLayerRef = useRef<HTMLDivElement | null>(null);
   const [title, setTitle] = useState(initialTitle);
   const [content, setContent] = useState(initialContent);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [richInput, setRichInput] = useState(true);
   const [textColor, setTextColor] = useState("red");
   const colorSwatch: Record<string, string> = {
     red: "#dc2626",
@@ -47,6 +49,13 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
       const caret = start + inserted.length;
       textarea.setSelectionRange(caret, caret);
     });
+  }
+
+  function syncPreviewScroll() {
+    if (!textareaRef.current || !previewLayerRef.current) {
+      return;
+    }
+    previewLayerRef.current.scrollTop = textareaRef.current.scrollTop;
   }
 
   function insertPrefixForLines(prefix: string) {
@@ -197,19 +206,39 @@ export function PostForm({ mode, postId, initialTitle = "", initialContent = "" 
             “
           </button>
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
-          <textarea
-            ref={textareaRef}
-            rows={14}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-accent"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-            minLength={10}
-          />
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-            <p className="mb-2 text-xs font-semibold tracking-wide text-slate-500">リアルタイムプレビュー</p>
-            <MarkdownContent markdown={content} />
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-xs text-slate-600">
+            <input
+              type="checkbox"
+              checked={richInput}
+              onChange={(event) => setRichInput(event.target.checked)}
+            />
+            入力中に装飾を反映する
+          </label>
+          <div className="relative min-h-[22rem] rounded-lg border border-slate-300">
+            {richInput ? (
+              <div
+                ref={previewLayerRef}
+                className="pointer-events-none absolute inset-0 overflow-auto px-3 py-2"
+                aria-hidden="true"
+              >
+                <MarkdownContent markdown={content || " "} className="text-slate-800" />
+              </div>
+            ) : null}
+            <textarea
+              ref={textareaRef}
+              rows={14}
+              className={`relative z-10 w-full resize-y rounded-lg px-3 py-2 outline-none focus:border-accent ${
+                richInput
+                  ? "min-h-[22rem] border-transparent bg-transparent text-transparent caret-ink selection:bg-sky-200/60"
+                  : "border border-slate-300"
+              }`}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              onScroll={syncPreviewScroll}
+              required
+              minLength={10}
+            />
           </div>
         </div>
       </div>

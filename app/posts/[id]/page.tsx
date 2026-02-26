@@ -5,7 +5,8 @@ import { CommentForm } from "@/components/comment-form";
 import { CommentThread } from "@/components/comment-thread";
 import { DeletePostButton } from "@/components/delete-post-button";
 import { MarkdownContent } from "@/components/markdown-content";
-import { getCommentsByPostId, getPostById } from "@/lib/data";
+import { PostReactionButtons } from "@/components/post-reaction-buttons";
+import { getCommentsByPostId, getPostById, getPostReactionSummary } from "@/lib/data";
 import { toJaDateTime } from "@/lib/format";
 import { getSessionUser } from "@/lib/session";
 
@@ -32,6 +33,7 @@ export default async function PostDetailPage({ params }: Params) {
     notFound();
   }
 
+  const reactionSummary = await getPostReactionSummary(post.id, session?.userId ?? null);
   const canEdit = session?.userId === post.userId;
 
   return (
@@ -47,6 +49,16 @@ export default async function PostDetailPage({ params }: Params) {
         </div>
         <h1 className="text-3xl font-bold tracking-tight">{post.title}</h1>
         <MarkdownContent markdown={post.content} className="mt-5 leading-7 text-slate-800" />
+        <div className="mt-4">
+          <PostReactionButtons
+            postId={post.id}
+            canReact={Boolean(session)}
+            initialLiked={reactionSummary.liked}
+            initialFavorited={reactionSummary.favorited}
+            initialLikeCount={reactionSummary.likeCount}
+            initialFavoriteCount={reactionSummary.favoriteCount}
+          />
+        </div>
       </article>
 
       {canEdit ? (

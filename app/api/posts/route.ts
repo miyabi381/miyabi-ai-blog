@@ -18,7 +18,8 @@ function parsePostId(value: string | null) {
 export async function GET(request: NextRequest) {
   const postId = parsePostId(request.nextUrl.searchParams.get("postId"));
   if (!postId) {
-    const list = await getPostList();
+    const query = request.nextUrl.searchParams.get("q") ?? undefined;
+    const list = await getPostList(query);
     return NextResponse.json({ posts: list });
   }
 
