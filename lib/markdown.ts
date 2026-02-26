@@ -218,13 +218,13 @@ export function renderMarkdownToHtml(markdown: string) {
       continue;
     }
 
-    const checkListMatch = line.match(/^(?:[-*]\s+)?\[([ xX])\](?:\s+(.*))?$/);
+    const checkListMatch = line.match(/^\s*(?:[-*+]\s+)?\[([ xX])\](?:\s+(.*))?$/);
     if (checkListMatch) {
       flushParagraph(paragraphBuffer, chunks);
       const items = [{ checked: checkListMatch[1].toLowerCase() === "x", text: checkListMatch[2] ?? "" }];
       while (i + 1 < lines.length) {
         const next = lines[i + 1] ?? "";
-        const nextMatch = next.match(/^(?:[-*]\s+)?\[([ xX])\](?:\s+(.*))?$/);
+        const nextMatch = next.match(/^\s*(?:[-*+]\s+)?\[([ xX])\](?:\s+(.*))?$/);
         if (!nextMatch) {
           break;
         }
@@ -244,13 +244,13 @@ export function renderMarkdownToHtml(markdown: string) {
       continue;
     }
 
-    const ulMatch = line.match(/^[-*]\s+(.+)$/);
+    const ulMatch = line.match(/^\s*[-*+]\s+(.+)$/);
     if (ulMatch) {
       flushParagraph(paragraphBuffer, chunks);
       const items = [ulMatch[1]];
       while (i + 1 < lines.length) {
         const next = lines[i + 1] ?? "";
-        const nextMatch = next.match(/^[-*]\s+(.+)$/);
+        const nextMatch = next.match(/^\s*[-*+]\s+(.+)$/);
         if (!nextMatch) {
           break;
         }
@@ -261,20 +261,22 @@ export function renderMarkdownToHtml(markdown: string) {
       continue;
     }
 
-    const olMatch = line.match(/^\d+\.\s+(.+)$/);
+    const olMatch = line.match(/^\s*(\d+)\.\s+(.+)$/);
     if (olMatch) {
       flushParagraph(paragraphBuffer, chunks);
-      const items = [olMatch[1]];
+      const start = Number(olMatch[1]);
+      const items = [olMatch[2]];
       while (i + 1 < lines.length) {
         const next = lines[i + 1] ?? "";
-        const nextMatch = next.match(/^\d+\.\s+(.+)$/);
+        const nextMatch = next.match(/^\s*(\d+)\.\s+(.+)$/);
         if (!nextMatch) {
           break;
         }
-        items.push(nextMatch[1]);
+        items.push(nextMatch[2]);
         i += 1;
       }
-      chunks.push(`<ol>${items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</ol>`);
+      const startAttr = Number.isFinite(start) && start > 1 ? ` start="${start}"` : "";
+      chunks.push(`<ol${startAttr}>${items.map((item) => `<li>${formatInline(item)}</li>`).join("")}</ol>`);
       continue;
     }
 

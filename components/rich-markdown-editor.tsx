@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { $createCodeNode, CodeNode } from "@lexical/code";
 import { AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
 import { ListItemNode, ListNode, INSERT_CHECK_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND } from "@lexical/list";
-import { $convertFromMarkdownString, $convertToMarkdownString } from "@lexical/markdown";
+import { $convertFromMarkdownString, $convertToMarkdownString, CHECK_LIST, TRANSFORMERS } from "@lexical/markdown";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -13,10 +13,7 @@ import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin";
-import {
-  MarkdownShortcutPlugin,
-  DEFAULT_TRANSFORMERS
-} from "@lexical/react/LexicalMarkdownShortcutPlugin";
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { HorizontalRuleNode, INSERT_HORIZONTAL_RULE_COMMAND } from "@lexical/react/LexicalHorizontalRuleNode";
 import { HorizontalRulePlugin } from "@lexical/react/LexicalHorizontalRulePlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
@@ -35,6 +32,8 @@ type RichMarkdownEditorProps = {
   initialMarkdown: string;
   onChangeMarkdown: (markdown: string) => void;
 };
+
+const MARKDOWN_TRANSFORMERS = [CHECK_LIST, ...TRANSFORMERS];
 
 function Toolbar() {
   const [editor] = useLexicalComposerContext();
@@ -179,7 +178,7 @@ export function RichMarkdownEditor({ initialMarkdown, onChangeMarkdown }: RichMa
       },
       nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, CodeNode, LinkNode, AutoLinkNode, HorizontalRuleNode],
       editorState: () => {
-        $convertFromMarkdownString(initialMarkdown, DEFAULT_TRANSFORMERS);
+        $convertFromMarkdownString(initialMarkdown, MARKDOWN_TRANSFORMERS);
       }
     }),
     [initialMarkdown]
@@ -199,12 +198,12 @@ export function RichMarkdownEditor({ initialMarkdown, onChangeMarkdown }: RichMa
         <CheckListPlugin />
         <LinkPlugin />
         <HorizontalRulePlugin />
-        <MarkdownShortcutPlugin transformers={DEFAULT_TRANSFORMERS} />
+        <MarkdownShortcutPlugin transformers={MARKDOWN_TRANSFORMERS} />
         <OnChangePlugin
           ignoreHistoryMergeTagChange
           onChange={(editorState) => {
             editorState.read(() => {
-              onChangeMarkdown($convertToMarkdownString(DEFAULT_TRANSFORMERS));
+              onChangeMarkdown($convertToMarkdownString(MARKDOWN_TRANSFORMERS));
             });
           }}
         />
