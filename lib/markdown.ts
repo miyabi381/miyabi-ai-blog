@@ -214,6 +214,32 @@ export function renderMarkdownToHtml(markdown: string) {
       continue;
     }
 
+    const checkListMatch = line.match(/^[-*]\s+\[([ xX])\]\s+(.+)$/);
+    if (checkListMatch) {
+      flushParagraph(paragraphBuffer, chunks);
+      const items = [{ checked: checkListMatch[1].toLowerCase() === "x", text: checkListMatch[2] }];
+      while (i + 1 < lines.length) {
+        const next = lines[i + 1] ?? "";
+        const nextMatch = next.match(/^[-*]\s+\[([ xX])\]\s+(.+)$/);
+        if (!nextMatch) {
+          break;
+        }
+        items.push({ checked: nextMatch[1].toLowerCase() === "x", text: nextMatch[2] });
+        i += 1;
+      }
+      chunks.push(
+        `<ul class="checklist">${items
+          .map(
+            (item) =>
+              `<li data-checked="${item.checked ? "true" : "false"}"><input type="checkbox" disabled ${
+                item.checked ? "checked" : ""
+              } /><span>${formatInline(item.text)}</span></li>`
+          )
+          .join("")}</ul>`
+      );
+      continue;
+    }
+
     const ulMatch = line.match(/^[-*]\s+(.+)$/);
     if (ulMatch) {
       flushParagraph(paragraphBuffer, chunks);

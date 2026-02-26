@@ -114,6 +114,88 @@ a {
   border: 1px solid #e2e8f0;
 }
 
+.markdown-body ul.checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body ul.checklist li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.markdown-body ul.checklist li input[type="checkbox"] {
+  margin: 0;
+}
+
+.rt-shell {
+  position: relative;
+  border-radius: 0.75rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+}
+
+.rt-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.55rem;
+}
+
+.rt-toolbar button {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.4rem;
+  background: #fff;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+.rt-editor {
+  min-height: 22rem;
+  padding: 0.75rem;
+  outline: none;
+}
+
+.rt-placeholder {
+  position: absolute;
+  margin: 0.75rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.rt-quote {
+  margin: 0.8rem 0;
+  border-left: 4px solid #cbd5e1;
+  padding-left: 0.8rem;
+  color: #475569;
+}
+
+.rt-bold {
+  font-weight: 700;
+}
+
+.rt-italic {
+  font-style: italic;
+}
+
+.rt-underline {
+  text-decoration: underline;
+}
+
+.rt-strike {
+  text-decoration: line-through;
+}
+
+.rt-inline-code {
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  padding: 0.1rem 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+}
+
 .markdown-body .token-keyword,
 .markdown-body .token-tag,
 .markdown-body .token-property {
